@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 페이지 | SBS아카데미 × 서울디지텍고</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#0057d9;--primary-d:#0041a8;--primary-l:#e8f0fd;
+  --accent:#ff5c00;--accent-l:#fff2eb;
+  --green:#1db56a;--green-l:#e8f9f0;
+  --red:#dc2626;--red-l:#fef2f2;
+  --gold:#f59e0b;--gold-l:#fef9e7;
+  --bg:#f0f2f8;--card:#fff;--border:#dde3ee;
+  --text:#1a2340;--text2:#4a5575;--text3:#8493b5;
+  --sidebar:240px;--header-h:60px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);}
+
+/* ── 로그인 ── */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0041a8,#0057d9 55%,#1e7cf7);}
+.login-box{background:#fff;border-radius:24px;padding:48px 44px;width:100%;max-width:400px;box-shadow:0 24px 80px rgba(0,0,0,.25);}
+.login-logo{display:flex;align-items:center;gap:14px;margin-bottom:32px;}
+.login-logo .lmark{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#3b82f6);display:flex;align-items:center;justify-content:center;font-size:24px;}
+.login-logo strong{display:block;font-size:14px;font-weight:800;color:var(--primary);}
+.login-logo span{font-size:11px;color:var(--text3);}
+.login-box h2{font-size:22px;font-weight:900;margin-bottom:6px;}
+.login-box .sub{font-size:13px;color:var(--text2);margin-bottom:28px;}
+.lfield{margin-bottom:14px;}
+.lfield label{display:block;font-size:11px;font-weight:800;letter-spacing:1px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;}
+.lfield input{width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--border);font-size:14px;font-family:inherit;outline:none;transition:border-color .18s;}
+.lfield input:focus{border-color:var(--primary);}
+.login-btn{width:100%;padding:14px;border-radius:10px;background:var(--primary);color:#fff;font-size:15px;font-weight:800;border:none;cursor:pointer;margin-top:8px;transition:background .18s;}
+.login-btn:hover{background:var(--primary-d);}
+.login-btn:disabled{background:#9ca3af;cursor:not-allowed;}
+.login-err{font-size:13px;color:var(--red);margin-top:10px;text-align:center;display:none;}
+.login-loading{font-size:13px;color:var(--primary);margin-top:10px;text-align:center;display:none;}
+
+/* ── 레이아웃 ── */
+.admin-wrap{display:none;min-height:100vh;}
+.admin-wrap.active{display:flex;}
+
+/* 사이드바 */
+.sidebar{width:var(--sidebar);flex-shrink:0;background:#1a2340;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;transition:transform .3s;}
+.sidebar.mob-hidden{transform:translateX(-100%);}
+.sb-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
+.sb-logo .sbmark{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#3b82f6);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:10px;}
+.sb-logo strong{display:block;font-size:12px;font-weight:800;color:#fff;line-height:1.5;}
+.sb-logo span{font-size:10px;color:rgba(255,255,255,.4);}
+.sb-nav{flex:1;padding:10px 8px;overflow-y:auto;}
+.nav-label{font-size:10px;font-weight:800;letter-spacing:1.5px;color:rgba(255,255,255,.3);padding:14px 10px 6px;text-transform:uppercase;}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:rgba(255,255,255,.6);cursor:pointer;transition:all .18s;border:none;background:none;width:100%;text-align:left;font-family:inherit;margin-bottom:2px;}
+.nav-btn:hover{background:rgba(255,255,255,.07);color:#fff;}
+.nav-btn.active{background:var(--primary);color:#fff;}
+.nav-btn .ni{font-size:15px;flex-shrink:0;}
+.sb-footer{padding:14px;border-top:1px solid rgba(255,255,255,.08);}
+.sb-user{font-size:11px;color:rgba(255,255,255,.45);margin-bottom:10px;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.logout-btn{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;color:rgba(255,255,255,.5);cursor:pointer;background:none;border:none;width:100%;font-family:inherit;transition:all .18s;}
+.logout-btn:hover{background:rgba(239,68,68,.15);color:#f87171;}
+
+/* 메인 */
+.main-area{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left .3s;}
+.main-area.full{margin-left:0;}
+.topbar{height:var(--header-h);background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50;box-shadow:0 1px 4px rgba(0,0,0,.04);}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.mob-toggle{background:none;border:none;font-size:20px;cursor:pointer;padding:6px;color:var(--text2);display:none;}
+.topbar-title{font-size:17px;font-weight:900;color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+.admin-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px;background:var(--primary-l);color:var(--primary);}
+.visit-btn{font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;background:var(--primary);color:#fff;border:none;cursor:pointer;text-decoration:none;transition:background .18s;}
+.visit-btn:hover{background:var(--primary-d);}
+
+.content{padding:28px;flex:1;}
+.panel{display:none;animation:fadeIn .3s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* 대시보드 */
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px;}
+.dash-card{background:var(--card);border-radius:16px;padding:22px 20px;border:1.5px solid var(--border);position:relative;overflow:hidden;transition:border-color .2s,transform .2s;}
+.dash-card:hover{border-color:var(--primary);transform:translateY(-2px);}
+.dash-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.dash-card:nth-child(1)::before{background:var(--primary);}
+.dash-card:nth-child(2)::before{background:var(--accent);}
+.dash-card:nth-child(3)::before{background:var(--green);}
+.dash-card:nth-child(4)::before{background:var(--gold);}
+.dash-card:nth-child(5)::before{background:#7c3aed;}
+.dash-card:nth-child(6)::before{background:#0891b2;}
+.dc-icon{font-size:26px;margin-bottom:10px;}
+.dc-num{font-size:1.9rem;font-weight:900;color:var(--text);line-height:1;margin-bottom:4px;}
+.dc-label{font-size:12px;color:var(--text3);font-weight:600;}
+.quick-box{background:var(--card);border-radius:16px;padding:22px;border:1.5px solid var(--border);}
+.quick-title{font-size:14px;font-weight:800;color:var(--text);margin-bottom:14px;}
+.quick-btns{display:flex;flex-wrap:wrap;gap:10px;}
+
+/* 섹션 헤더 */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px;}
+.sec-hdr h2{font-size:17px;font-weight:900;color:var(--text);}
+.btn-add{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:10px;background:var(--primary);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:background .18s;}
+.btn-add:hover{background:var(--primary-d);}
+.btn-add.green{background:var(--green);} .btn-add.green:hover{background:#15a05e;}
+.btn-add.accent{background:var(--accent);} .btn-add.accent:hover{background:#e04f00;}
+.btn-add.purple{background:#7c3aed;} .btn-add.purple:hover{background:#6d28d9;}
+
+/* 리스트 */
+.admin-list{display:flex;flex-direction:column;gap:8px;}
+.admin-item{background:var(--card);border-radius:12px;padding:16px 20px;border:1.5px solid var(--border);display:flex;align-items:center;gap:14px;transition:border-color .18s;}
+.admin-item:hover{border-color:var(--primary);}
+.ai-icon{width:42px;height:42px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--primary-l);}
+.ai-info{flex:1;min-width:0;}
+.ai-title{font-size:14px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ai-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+.ai-actions{display:flex;gap:6px;flex-shrink:0;}
+.btn-edit{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:700;background:var(--primary-l);color:var(--primary);border:1.5px solid rgba(0,87,217,.2);cursor:pointer;font-family:inherit;transition:all .18s;}
+.btn-edit:hover{background:var(--primary);color:#fff;}
+.btn-del{padding:5px 12px;border-radius:7px;font-size:12px;font-weight:700;background:var(--red-l);color:var(--red);border:1.5px solid rgba(220,38,38,.2);cursor:pointer;font-family:inherit;transition:all .18s;}
+.btn-del:hover{background:var(--red);color:#fff;}
+
+/* 뱃지 */
+.badge{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700;}
+.badge.open{background:var(--green-l);color:var(--green);border:1px solid rgba(29,181,106,.25);}
+.badge.close{background:var(--bg);color:var(--text3);border:1px solid var(--border);}
+
+/* 통계 */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;}
+.stat-card{background:var(--card);border-radius:12px;padding:20px;border:1.5px solid var(--border);}
+.stat-card label{display:block;font-size:11px;font-weight:800;letter-spacing:1px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;}
+.stat-card input{width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:18px;font-weight:900;color:var(--primary);font-family:inherit;outline:none;text-align:center;transition:border-color .18s;}
+.stat-card input:focus{border-color:var(--primary);}
+.stat-card .hint{font-size:11px;color:var(--text3);margin-top:5px;text-align:center;}
+
+/* 초기 업로드 배너 */
+.seed-banner{background:linear-gradient(135deg,var(--gold-l),#fde68a);border:1.5px solid rgba(245,158,11,.35);border-radius:14px;padding:18px 22px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+.seed-banner p{font-size:13px;color:#78350f;font-weight:600;line-height:1.6;}
+.seed-banner p strong{display:block;font-size:14px;margin-bottom:3px;}
+.btn-seed{padding:9px 20px;border-radius:10px;background:var(--gold);color:#fff;font-size:13px;font-weight:800;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;transition:background .18s;}
+.btn-seed:hover{background:#d97706;}
+.btn-seed:disabled{background:#9ca3af;cursor:not-allowed;}
+
+/* 로딩 스켈레톤 */
+.skeleton{background:linear-gradient(90deg,#f0f2f8 25%,#e8eaf0 50%,#f0f2f8 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:10px;height:60px;margin-bottom:8px;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* 모달 */
+.modal-overlay{position:fixed;inset:0;z-index:300;background:rgba(10,20,60,.5);backdrop-filter:blur(6px);display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.amodal{background:#fff;border-radius:20px;padding:32px;width:100%;max-width:540px;margin:auto;position:relative;box-shadow:0 24px 80px rgba(0,0,0,.2);}
+.amodal h3{font-size:18px;font-weight:900;color:var(--text);margin-bottom:20px;padding-bottom:12px;border-bottom:2px solid var(--border);}
+.aclose{position:absolute;top:16px;right:18px;width:30px;height:30px;border-radius:8px;background:var(--bg);border:none;font-size:15px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;}
+.aclose:hover{background:var(--border);}
+.aform-group{margin-bottom:14px;}
+.aform-group label{display:block;font-size:11px;font-weight:800;letter-spacing:1px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;}
+.aform-group input,.aform-group select,.aform-group textarea{width:100%;padding:10px 13px;border-radius:9px;background:var(--bg);border:1.5px solid var(--border);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:14px;outline:none;transition:border-color .18s;}
+.aform-group input:focus,.aform-group select:focus,.aform-group textarea:focus{border-color:var(--primary);background:#fff;}
+.aform-group textarea{min-height:80px;resize:vertical;}
+.aform-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.amodal-actions{display:flex;gap:10px;margin-top:8px;}
+.btn-submit{flex:1;padding:12px;border-radius:10px;background:var(--primary);color:#fff;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:inherit;transition:background .18s;}
+.btn-submit:hover{background:var(--primary-d);}
+.btn-submit:disabled{background:#9ca3af;cursor:not-allowed;}
+.btn-cancel{padding:12px 20px;border-radius:10px;background:var(--bg);color:var(--text2);font-size:14px;font-weight:700;border:1.5px solid var(--border);cursor:pointer;font-family:inherit;}
+
+/* 토스트 */
+.toast{position:fixed;bottom:26px;right:26px;z-index:9999;background:var(--text);border-radius:12px;padding:13px 20px;font-size:13px;font-weight:700;color:#fff;box-shadow:0 8px 32px rgba(0,0,0,.2);transform:translateY(70px);opacity:0;transition:transform .3s,opacity .3s;pointer-events:none;display:flex;align-items:center;gap:8px;}
+.toast.show{transform:translateY(0);opacity:1;}
+
+/* 빈 상태 */
+.empty-state{text-align:center;padding:52px 20px;color:var(--text3);}
+.empty-state .ei{font-size:44px;margin-bottom:12px;}
+.empty-state p{font-size:13px;}
+
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.mob-open{transform:translateX(0);}
+  .main-area{margin-left:0;}
+  .mob-toggle{display:block;}
+  .aform-row{grid-template-columns:1fr;}
+  .content{padding:16px;}
+}
+
+/* ═══ 이미지 업로드 ═══ */
+.upload-zone {
+  border:2px dashed var(--border); border-radius:12px; padding:24px;
+  text-align:center; cursor:pointer; transition:border-color .18s, background .18s;
+  background:var(--bg); position:relative;
+}
+.upload-zone:hover { border-color:var(--primary); background:var(--primary-l); }
+.upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-zone .uz-icon { font-size:32px; margin-bottom:8px; }
+.upload-zone p { font-size:13px; color:var(--text2); line-height:1.6; }
+.upload-zone span { color:var(--primary); font-weight:700; }
+.upload-preview { margin-top:12px; border-radius:10px; overflow:hidden; max-height:200px; display:none; position:relative; }
+.upload-preview img { width:100%; height:200px; object-fit:cover; border-radius:10px; }
+.upload-preview .remove-img { position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,.6); color:#fff; border:none; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; }
+.upload-progress { height:4px; background:var(--border); border-radius:2px; margin-top:8px; display:none; overflow:hidden; }
+.upload-progress-bar { height:100%; background:var(--primary); border-radius:2px; transition:width .3s; width:0%; }
+
+/* 배너 관리 */
+.banner-list { display:flex; flex-direction:column; gap:10px; }
+.banner-item { background:var(--card); border-radius:14px; border:1.5px solid var(--border); overflow:hidden; transition:border-color .18s; }
+.banner-item:hover { border-color:var(--primary); }
+.banner-thumb { width:100%; height:160px; object-fit:cover; display:block; }
+.banner-thumb-empty { width:100%; height:160px; background:linear-gradient(135deg,var(--primary-l),#dce8fc); display:flex; align-items:center; justify-content:center; font-size:40px; }
+.banner-info { padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.banner-info h5 { font-size:14px; font-weight:700; color:var(--text); }
+.banner-info p  { font-size:12px; color:var(--text3); margin-top:2px; }
+.banner-order { display:flex; gap:4px; }
+.btn-order { width:28px; height:28px; border-radius:6px; background:var(--bg); border:1.5px solid var(--border); font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .18s; }
+.btn-order:hover { background:var(--primary-l); border-color:var(--primary); }
+
+
+/* ═══ 다중 이미지 업로드 ═══ */
+.news-img-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+.news-img-item {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 1;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+}
+.news-img-item img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.news-img-item .del-img-btn {
+  position: absolute; top: 5px; right: 5px;
+  width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(0,0,0,.65); color: #fff;
+  border: none; cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .18s;
+}
+.news-img-item .del-img-btn:hover { background: var(--red); }
+.news-img-item .img-uploading {
+  position: absolute; inset: 0; background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+}
+.news-img-add {
+  border: 2px dashed var(--border); border-radius: 10px;
+  aspect-ratio: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; cursor: pointer;
+  background: var(--bg); transition: border-color .18s, background .18s;
+  position: relative;
+}
+.news-img-add:hover { border-color: var(--primary); background: var(--primary-l); }
+.news-img-add input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.news-img-add span { font-size: 22px; margin-bottom: 4px; }
+.news-img-add p { font-size: 11px; color: var(--text3); font-weight: 600; }
+.news-img-count { font-size: 12px; color: var(--text3); margin-top: 6px; }
+
+</style>
+</head>
+<body>
+
+<!-- 로그인 -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="lmark">🎮</div>
+      <div><strong>SBS아카데미 × 서울디지텍고</strong><span>관리자 페이지</span></div>
+    </div>
+    <h2>관리자 로그인</h2>
+    <p class="sub">Firebase 계정으로 로그인하세요.<br>계정은 Firebase Console → Authentication에서 생성합니다.</p>
+    <div class="lfield"><label>이메일</label><input type="email" id="loginEmail" placeholder="admin@example.com" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="lfield"><label>비밀번호</label><input type="password" id="loginPw" placeholder="비밀번호" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">로그인</button>
+    <div class="login-err" id="loginErr"></div>
+    <div class="login-loading" id="loginLoading">🔄 로그인 중...</div>
+  </div>
+</div>
+
+<!-- 관리자 레이아웃 -->
+<div class="admin-wrap" id="adminWrap">
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sbmark">🎮</div>
+      <strong>SBS아카데미 × 서울디지텍고</strong>
+      <span>관리자 패널</span>
+    </div>
+    <nav class="sb-nav">
+      <div class="nav-label">대시보드</div>
+      <button class="nav-btn active" onclick="showPanel('dashboard')" id="nav-dashboard"><span class="ni">📊</span> 대시보드</button>
+      <div class="nav-label">콘텐츠 관리</div>
+      <button class="nav-btn" onclick="showPanel('portfolio')" id="nav-portfolio"><span class="ni">🖼️</span> 포트폴리오</button>
+      <button class="nav-btn" onclick="showPanel('jobs')" id="nav-jobs"><span class="ni">📋</span> 채용 공고</button>
+      <button class="nav-btn" onclick="showPanel('news')" id="nav-news"><span class="ni">📰</span> 활동소식</button>
+      <div class="nav-label">기업 · 통계</div>
+      <button class="nav-btn" onclick="showPanel('companies')" id="nav-companies"><span class="ni">🏢</span> 취업 기업</button>
+      <button class="nav-btn" onclick="showPanel('stats')" id="nav-stats"><span class="ni">📈</span> 취업 통계</button>
+      <div class="nav-label">파트너십</div>
+      <button class="nav-btn" onclick="showPanel('instructors')" id="nav-instructors"><span class="ni">👨‍🏫</span> 강사진</button>
+      <div class="nav-label">사이트 설정</div>
+      <button class="nav-btn" onclick="showPanel('banner')" id="nav-banner"><span class="ni">🖼️</span> 메인 배너</button>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user" id="sbUser">로그인 중...</div>
+      <button class="logout-btn" onclick="doLogout()">🚪 로그아웃</button>
+    </div>
+  </aside>
+
+  <div class="main-area" id="mainArea">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="mob-toggle" onclick="toggleSidebar()">☰</button>
+        <span class="topbar-title" id="topbarTitle">대시보드</span>
+      </div>
+      <div class="topbar-right">
+        <span class="admin-badge">🔐 관리자</span>
+        <a class="visit-btn" href="index.html" target="_blank">홈페이지 →</a>
+      </div>
+    </div>
+    <div class="content">
+
+      <!-- 대시보드 -->
+      <div class="panel active" id="panel-dashboard">
+        <div id="seedBanner" style="display:none;" class="seed-banner">
+          <p><strong>🌱 Firestore가 비어있습니다</strong>샘플 데이터를 업로드하면 홈페이지에 바로 반영됩니다.</p>
+          <button class="btn-seed" id="seedBtn" onclick="seedData()">초기 데이터 업로드</button>
+        </div>
+        <div class="dash-grid" id="dashGrid"></div>
+        <div class="quick-box">
+          <div class="quick-title">⚡ 빠른 작업</div>
+          <div class="quick-btns">
+            <button class="btn-add" onclick="showPanel('portfolio');openModal('pf')">+ 포트폴리오</button>
+            <button class="btn-add accent" onclick="showPanel('jobs');openModal('job')">+ 채용 공고</button>
+            <button class="btn-add green" onclick="showPanel('news');openModal('news')">+ 활동소식</button>
+            <button class="btn-add purple" onclick="showPanel('companies');openModal('company')">+ 취업 기업</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 포트폴리오 -->
+      <div class="panel" id="panel-portfolio">
+        <div class="sec-hdr"><h2>🖼️ 포트폴리오 관리</h2><button class="btn-add" onclick="openModal('pf')">+ 추가</button></div>
+        <div class="admin-list" id="list-portfolio"></div>
+      </div>
+
+      <!-- 채용 공고 -->
+      <div class="panel" id="panel-jobs">
+        <div class="sec-hdr"><h2>📋 채용 공고 관리</h2><button class="btn-add" onclick="openModal('job')">+ 추가</button></div>
+        <div class="admin-list" id="list-jobs"></div>
+      </div>
+
+      <!-- 활동소식 -->
+      <div class="panel" id="panel-news">
+        <div class="sec-hdr"><h2>📰 활동소식 관리</h2><button class="btn-add" onclick="openModal('news')">+ 추가</button></div>
+        <div class="admin-list" id="list-news"></div>
+      </div>
+
+      <!-- 취업 기업 -->
+      <div class="panel" id="panel-companies">
+        <div class="sec-hdr"><h2>🏢 취업 기업 관리</h2><button class="btn-add" onclick="openModal('company')">+ 추가</button></div>
+        <div class="admin-list" id="list-companies"></div>
+      </div>
+
+      <!-- 취업 통계 -->
+      <div class="panel" id="panel-stats">
+        <div class="sec-hdr">
+          <h2>📈 취업 통계 수정</h2>
+          <button class="btn-add green" onclick="saveStats()">💾 저장</button>
+        </div>
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+
+      <!-- 강사진 -->
+      <div class="panel" id="panel-instructors">
+        <div class="sec-hdr"><h2>👨‍🏫 강사진 관리</h2><button class="btn-add" onclick="openModal('inst')">+ 추가</button></div>
+        <div class="admin-list" id="list-instructors"></div>
+      </div>
+
+      <!-- 메인 배너 -->
+      <div class="panel" id="panel-banner">
+        <div class="sec-hdr">
+          <h2>🖼️ 메인 배너 관리</h2>
+          <button class="btn-add" onclick="openModal('banner')">+ 배너 추가</button>
+        </div>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.7;">
+          홈페이지 상단 히어로 배너 이미지를 관리합니다.<br>
+          권장 사이즈: <strong>1280 × 560px</strong> · JPG/PNG · 최대 5MB
+        </p>
+        <div class="banner-list" id="list-banner"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 포트폴리오 모달 -->
+<div class="modal-overlay" id="modal-pf" onclick="closeModalOuter('pf',event)">
+  <div class="amodal">
+    <button class="aclose" onclick="closeModal('pf')">✕</button>
+    <h3 id="title-pf">포트폴리오 추가</h3>
+    <div class="aform-row">
+      <div class="aform-group"><label>학생 이름</label><input id="pf-name" placeholder="홍길동"></div>
+      <div class="aform-group"><label>학년</label>
+        <select id="pf-grade"><option value="">선택</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="grad">졸업생</option></select>
+      </div>
+    </div>
+    <div class="aform-group"><label>작품 제목</label><input id="pf-title" placeholder="작품 제목"></div>
+    <div class="aform-row">
+      <div class="aform-group"><label>분야</label>
+        <select id="pf-type"><option value="">선택</option><option>게임 프로그래밍</option><option>게임 아트</option><option>게임 기획</option><option>팀 프로젝트</option></select>
+      </div>
+      <div class="aform-group"><label>사용 툴 (쉼표 구분)</label><input id="pf-tools" placeholder="Unity, C#"></div>
+    </div>
+    <div class="aform-group"><label>작품 설명</label><textarea id="pf-desc" placeholder="작품 설명"></textarea></div>
+    <div class="aform-group"><label>링크</label><input id="pf-link" placeholder="https://"></div>
+    <div class="amodal-actions">
+      <button class="btn-cancel" onclick="closeModal('pf')">취소</button>
+      <button class="btn-submit" id="submit-pf" onclick="saveItem('pf')">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 채용공고 모달 -->
+<div class="modal-overlay" id="modal-job" onclick="closeModalOuter('job',event)">
+  <div class="amodal">
+    <button class="aclose" onclick="closeModal('job')">✕</button>
+    <h3 id="title-job">채용 공고 추가</h3>
+    <div class="aform-group"><label>직무 분야</label><input id="job-tag" placeholder="게임 프로그래머"></div>
+    <div class="aform-group"><label>공고 제목</label><input id="job-title" placeholder="Unity 클라이언트 개발자 (신입)"></div>
+    <div class="aform-row">
+      <div class="aform-group"><label>회사명</label><input id="job-company" placeholder="스마일게이트 RPG"></div>
+      <div class="aform-group"><label>지역</label><input id="job-location" placeholder="서울 성동구"></div>
+    </div>
+    <div class="aform-row">
+      <div class="aform-group"><label>마감일</label><input id="job-deadline" placeholder="2025.04.30 마감"></div>
+      <div class="aform-group"><label>상태</label>
+        <select id="job-status"><option value="open">모집중</option><option value="close">마감</option></select>
+      </div>
+    </div>
+    <div class="amodal-actions">
+      <button class="btn-cancel" onclick="closeModal('job')">취소</button>
+      <button class="btn-submit" id="submit-job" onclick="saveItem('job')">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 활동소식 모달 -->
+<div class="modal-overlay" id="modal-news" onclick="closeModalOuter('news',event)">
+  <div class="amodal">
+    <button class="aclose" onclick="closeModal('news')">✕</button>
+    <h3 id="title-news">활동소식 추가</h3>
+    <div class="aform-row">
+      <div class="aform-group"><label>카테고리</label><input id="news-cat" placeholder="사업 선정"></div>
+      <div class="aform-group"><label>날짜</label><input id="news-date" placeholder="2025. 03"></div>
+    </div>
+    <div class="aform-group"><label>제목</label><input id="news-title" placeholder="소식 제목"></div>
+    <div class="aform-group"><label>내용</label><textarea id="news-desc" placeholder="소식 내용"></textarea></div>
+    <div class="aform-group">
+      <label>사진 첨부 <span style="font-size:10px;color:var(--text3);font-weight:400;">(여러 장 가능 · JPG/PNG · 장당 최대 5MB)</span></label>
+      <div class="news-img-grid" id="newsImgGrid">
+        <div class="news-img-add" id="newsImgAddBtn">
+          <input type="file" id="news-image-files" accept="image/*" multiple onchange="addNewsImages(this)">
+          <span>📸</span>
+          <p>사진 추가</p>
+        </div>
+      </div>
+      <div class="news-img-count" id="newsImgCount"></div>
+      <div class="upload-progress" id="newsUploadProgress" style="margin-top:8px;">
+        <div class="upload-progress-bar" id="newsProgressBar"></div>
+      </div>
+    </div>
+    <div class="aform-group"><label>썸네일 이모지 <span style="font-size:10px;color:var(--text3);font-weight:400;">(사진 없을 때 표시)</span></label><input id="news-icon" placeholder="🎮" maxlength="2"></div>
+    <div class="amodal-actions">
+      <button class="btn-cancel" onclick="closeModal('news')">취소</button>
+      <button class="btn-submit" id="submit-news" onclick="saveItem('news')">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 취업기업 모달 -->
+<div class="modal-overlay" id="modal-company" onclick="closeModalOuter('company',event)">
+  <div class="amodal">
+    <button class="aclose" onclick="closeModal('company')">✕</button>
+    <h3 id="title-company">취업 기업 추가</h3>
+    <div class="aform-row">
+      <div class="aform-group"><label>기업명</label><input id="co-name" placeholder="넥슨 (Nexon)"></div>
+      <div class="aform-group"><label>아이콘 이모지</label><input id="co-icon" placeholder="🎮" maxlength="2"></div>
+    </div>
+    <div class="aform-group"><label>직군</label><input id="co-role" placeholder="프로그래머 · 아티스트"></div>
+    <div class="amodal-actions">
+      <button class="btn-cancel" onclick="closeModal('company')">취소</button>
+      <button class="btn-submit" id="submit-company" onclick="saveItem('company')">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 강사진 모달 -->
+<div class="modal-overlay" id="modal-inst" onclick="closeModalOuter('inst',event)">
+  <div class="amodal">
+    <button class="aclose" onclick="closeModal('inst')">✕</button>
+    <h3 id="title-inst">강사 추가</h3>
+    <div class="aform-row">
+      <div class="aform-group"><label>이름</label><input id="inst-name" placeholder="김현우 강사"></div>
+      <div class="aform-group"><label>이모지</label><input id="inst-icon" placeholder="⚙️" maxlength="2"></div>
+    </div>
+    <div class="aform-group"><label>담당 분야</label><input id="inst-role" placeholder="게임 프로그래밍"></div>
+    <div class="aform-group"><label>경력 (줄바꿈 구분)</label><textarea id="inst-career" placeholder="• 前 넥슨 코리아 8년&#10;• Unity 공인 강사"></textarea></div>
+    <div class="aform-group"><label>전문 기술 (쉼표 구분)</label><input id="inst-tags" placeholder="Unity, C#, Physics"></div>
+    <div class="amodal-actions">
+      <button class="btn-cancel" onclick="closeModal('inst')">취소</button>
+      <button class="btn-submit" id="submit-inst" onclick="saveItem('inst')">저장</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 배너 모달 -->
+<div class="modal-overlay" id="modal-banner" onclick="closeModalOuter('banner',event)">
+  <div class="amodal">
+    <button class="aclose" onclick="closeModal('banner')">✕</button>
+    <h3 id="title-banner">배너 추가</h3>
+    <div class="aform-group">
+      <label>배너 이미지 <span style="font-size:10px;color:var(--text3);font-weight:400;">권장: 1280×560px · JPG/PNG · 최대 5MB</span></label>
+      <div class="upload-zone" id="bannerUploadZone">
+        <input type="file" id="banner-image-file" accept="image/*" onchange="previewBannerImage(this)">
+        <div class="uz-icon">🖼️</div>
+        <p><span>이미지를 선택</span>하거나 드래그해 주세요</p>
+      </div>
+      <div class="upload-preview" id="bannerImagePreview">
+        <img id="bannerPreviewImg" src="" alt="미리보기">
+        <button class="remove-img" onclick="removeBannerImage()">✕</button>
+      </div>
+      <div class="upload-progress" id="bannerUploadProgress">
+        <div class="upload-progress-bar" id="bannerProgressBar"></div>
+      </div>
+      <input type="hidden" id="banner-image-url" value="">
+    </div>
+    <div class="aform-group"><label>배너 제목 <span style="font-size:10px;color:var(--text3);">(선택)</span></label><input id="banner-title" placeholder="예) 2025 신입생 모집"></div>
+    <div class="aform-group"><label>부제목 <span style="font-size:10px;color:var(--text3);">(선택)</span></label><input id="banner-sub" placeholder="예) 게임 산업의 미래를 함께 만들어갑니다"></div>
+    <div class="aform-group"><label>링크 URL <span style="font-size:10px;color:var(--text3);">(선택 · 클릭 시 이동)</span></label><input id="banner-link" placeholder="https://"></div>
+    <div class="amodal-actions">
+      <button class="btn-cancel" onclick="closeModal('banner')">취소</button>
+      <button class="btn-submit" id="submit-banner" onclick="saveBanner()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ★★★ Firebase SDK (type="module") ★★★ -->
+<script type="module">
+import { initializeApp }    from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, getDocs, addDoc, setDoc, updateDoc, deleteDoc, query, orderBy, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+
+/* ★★★ 여기에 본인의 firebaseConfig를 붙여넣으세요 ★★★ */
+const firebaseConfig = {
+  apiKey:            "AIzaSyDaCfj0J_aKgDpU8otW8HGNtj5JvPkMhPY",
+  authDomain:        "sbs-digitech.firebaseapp.com",
+  projectId:         "sbs-digitech",
+  storageBucket:     "sbs-digitech.firebasestorage.app",
+  messagingSenderId: "981784042127",
+  appId:             "1:981784042127:web:896cbe5f1e5091055beefa"
+};
+
+const app     = initializeApp(firebaseConfig);
+const auth    = getAuth(app);
+const db      = getFirestore(app);
+const storage = getStorage(app);
+
+/* ════ 컬렉션 매핑 ════ */
+const COL = { pf:'portfolios', job:'jobs', news:'news', company:'companies', inst:'instructors' };
+const GL  = {'1':'1학년','2':'2학년','3':'3학년','grad':'졸업생'};
+const TM  = {'게임 프로그래밍':'pt-prog','게임 아트':'pt-art','게임 기획':'pt-plan','팀 프로젝트':'pt-prog'};
+const IM  = {'게임 프로그래밍':'⚙️','게임 아트':'🎨','게임 기획':'📋','팀 프로젝트':'🎮'};
+
+/* ════ 런타임 캐시 ════ */
+let cache = { pf:[], job:[], news:[], company:[], inst:[], stats:[] };
+let editId = { pf:null, job:null, news:null, company:null, inst:null };
+
+/* ════ Auth ════ */
+onAuthStateChanged(auth, user => {
+  if (user) {
+    document.getElementById('loginWrap').style.display = 'none';
+    document.getElementById('adminWrap').classList.add('active');
+    document.getElementById('sbUser').textContent = '👤 ' + user.email;
+    loadAll();
+  } else {
+    document.getElementById('loginWrap').style.display = 'flex';
+    document.getElementById('adminWrap').classList.remove('active');
+  }
+});
+
+window.doLogin = async () => {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPw').value;
+  if (!email || !pw) { showErr('이메일과 비밀번호를 입력하세요.'); return; }
+  document.getElementById('loginBtn').disabled = true;
+  document.getElementById('loginLoading').style.display = 'block';
+  document.getElementById('loginErr').style.display = 'none';
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+  } catch(e) {
+    const msgs = { 'auth/invalid-credential':'이메일 또는 비밀번호가 올바르지 않습니다.', 'auth/too-many-requests':'로그인 시도가 너무 많습니다. 잠시 후 다시 시도하세요.' };
+    showErr(msgs[e.code] || '로그인 오류: ' + e.message);
+    document.getElementById('loginBtn').disabled = false;
+    document.getElementById('loginLoading').style.display = 'none';
+  }
+};
+function showErr(msg) {
+  const el = document.getElementById('loginErr');
+  el.textContent = '❌ ' + msg;
+  el.style.display = 'block';
+}
+
+window.doLogout = async () => { await signOut(auth); };
+
+/* ════ 패널 전환 ════ */
+const panelNames = {dashboard:'대시보드',portfolio:'포트폴리오',jobs:'채용 공고',news:'활동소식',companies:'취업 기업',stats:'취업 통계',instructors:'강사진',banner:'메인 배너 관리'};
+window.showPanel = (id) => {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.getElementById('nav-' + id).classList.add('active');
+  document.getElementById('topbarTitle').textContent = panelNames[id] || id;
+  if (id === 'stats') renderStats();
+  if (id === 'banner') renderBannerList();
+  document.getElementById('sidebar').classList.remove('mob-open');
+};
+window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('mob-open');
+
+/* ════ 전체 로드 ════ */
+async function loadAll() {
+  showSkeletons();
+  await Promise.all([
+    loadBanners(),
+    loadCol('pf','portfolios','createdAt'),
+    loadCol('job','jobs','createdAt'),
+    loadCol('news','news','createdAt'),
+    loadCol('company','companies','createdAt'),
+    loadCol('inst','instructors','order'),
+    loadStats(),
+  ]);
+  renderAll();
+  checkSeedNeeded();
+}
+
+async function loadCol(key, colName, orderField) {
+  try {
+    const snap = await getDocs(query(collection(db, colName), orderBy(orderField, key==='inst'?'asc':'desc')));
+    cache[key] = snap.docs.map(d => ({_id:d.id, ...d.data()}));
+  } catch(e) {
+    try {
+      const snap = await getDocs(collection(db, colName));
+      cache[key] = snap.docs.map(d => ({_id:d.id, ...d.data()}));
+    } catch { cache[key] = []; }
+  }
+}
+
+async function loadStats() {
+  try {
+    const snap = await getDocs(collection(db,'stats'));
+    cache.stats = snap.docs.map(d => ({_id:d.id, ...d.data()}));
+  } catch { cache.stats = []; }
+}
+
+function showSkeletons() {
+  ['portfolio','jobs','news','companies','instructors'].forEach(id => {
+    const el = document.getElementById('list-' + id);
+    if (el) el.innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+  });
+}
+
+function renderAll() {
+  renderDash();
+  renderList('pf');
+  renderList('job');
+  renderList('news');
+  renderList('company');
+  renderList('inst');
+  renderStats();
+}
+
+/* ════ 대시보드 ════ */
+function renderDash() {
+  const openJobs = cache.job.filter(j => j.status === 'open').length;
+  const empRate  = cache.stats.find(s => s._id === '졸업생 취업률');
+  const cards = [
+    {icon:'🖼️', num:cache.pf.length,       label:'포트폴리오 수'},
+    {icon:'📋', num:openJobs,               label:'현재 모집 중 공고'},
+    {icon:'📰', num:cache.news.length,      label:'활동소식'},
+    {icon:'🏢', num:cache.company.length,   label:'취업 협력 기업'},
+    {icon:'👨‍🏫',num:cache.inst.length,      label:'강사진'},
+    {icon:'📈', num:(empRate?.value||'-')+'%', label:'졸업생 취업률'},
+  ];
+  document.getElementById('dashGrid').innerHTML = cards.map(c =>
+    `<div class="dash-card"><div class="dc-icon">${c.icon}</div><div class="dc-num">${c.num}</div><div class="dc-label">${c.label}</div></div>`
+  ).join('');
+}
+
+function checkSeedNeeded() {
+  const isEmpty = cache.pf.length === 0 && cache.job.length === 0 && cache.news.length === 0;
+  document.getElementById('seedBanner').style.display = isEmpty ? 'flex' : 'none';
+}
+
+/* ════ 리스트 렌더 ════ */
+const listConfigs = {
+  pf:      { icon: d => d.icon||'🖼️',  title: d => d.title,   sub: d => `${d.author||''} · ${d.type||''}` },
+  job:     { icon: d => '💼',            title: d => d.title,   sub: d => `${d.company||''} · ${d.deadline||''}`, badge: d => `<span class="badge ${d.status}">${d.status==='open'?'모집중':'마감'}</span>` },
+  news:    { icon: d => d.images&&d.images[0] ? `<img src="${d.images[0]}" style="width:42px;height:42px;object-fit:cover;border-radius:10px;">` : (d.icon||'📰'),   title: d => d.title,   sub: d => `${d.cat||''} · ${d.date||''} · 사진 ${(d.images||[]).length}장` },
+  company: { icon: d => d.icon||'🏢',   title: d => d.name,    sub: d => d.role||'' },
+  inst:    { icon: d => d.icon||'👨‍🏫', title: d => d.name,    sub: d => `${d.role||''} · ${(d.tags||[]).join(', ')}` },
+};
+const listElMap = { pf:'portfolio', job:'jobs', news:'news', company:'companies', inst:'instructors' };
+
+function renderList(key) {
+  const el = document.getElementById('list-' + listElMap[key]);
+  const data = cache[key];
+  const cfg  = listConfigs[key];
+  if (!el) return;
+  if (!data.length) {
+    el.innerHTML = '<div class="empty-state"><div class="ei">📂</div><p>등록된 항목이 없습니다.</p></div>';
+    return;
+  }
+  el.innerHTML = data.map(d => `
+    <div class="admin-item">
+      <div class="ai-icon">${cfg.icon(d)}</div>
+      <div class="ai-info">
+        <div class="ai-title">${cfg.title(d)}</div>
+        <div class="ai-sub">${cfg.sub(d)}</div>
+      </div>
+      ${cfg.badge ? cfg.badge(d) : ''}
+      <div class="ai-actions">
+        <button class="btn-edit" onclick="openModal('${key}','${d._id}')">✏️ 수정</button>
+        <button class="btn-del"  onclick="delItem('${key}','${d._id}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+/* ════ 모달 열기 ════ */
+const fieldMap = {
+  pf:      ['pf-name','pf-grade','pf-title','pf-type','pf-tools','pf-desc','pf-link'],
+  job:     ['job-tag','job-title','job-company','job-location','job-deadline','job-status'],
+  news:    ['news-cat','news-date','news-title','news-desc','news-icon'],
+  company: ['co-name','co-icon','co-role'],
+  inst:    ['inst-name','inst-icon','inst-role','inst-career','inst-tags'],
+};
+const titleMap = { pf:'포트폴리오', job:'채용 공고', news:'활동소식', company:'취업 기업', inst:'강사' };
+
+const _openModalOriginal = (key, id=null) => {
+  editId[key] = id;
+  const isEdit = !!id;
+  document.getElementById('title-'+key).textContent = (isEdit ? '수정: ' : '추가 — ') + titleMap[key];
+  // 폼 초기화
+  fieldMap[key].forEach(fid => {
+    const el = document.getElementById(fid);
+    if (el) el.value = '';
+  });
+  // 수정 모드: 기존 값 채우기
+  // 활동소식 모달 초기화
+  if (key === 'news') {
+    if (!isEdit) {
+      window._newsImages = [];
+      renderNewsImgGrid();
+    }
+  }
+  if (isEdit) {
+    const d = cache[key].find(x => x._id === id);
+    if (d) fillForm(key, d);
+  }
+  document.getElementById('modal-'+key).classList.add('open');
+};
+
+function fillForm(key, d) {
+  if (key === 'pf') {
+    const namePart = (d.author||'').split(' · ')[1] || '';
+    document.getElementById('pf-name').value  = namePart;
+    document.getElementById('pf-grade').value = d.grade||'';
+    document.getElementById('pf-title').value = d.title||'';
+    document.getElementById('pf-type').value  = d.type||'';
+    document.getElementById('pf-tools').value = (d.tools||[]).join(', ');
+    document.getElementById('pf-desc').value  = d.desc||'';
+    document.getElementById('pf-link').value  = d.link === '#' ? '' : (d.link||'');
+  } else if (key === 'job') {
+    ['tag','title','company','location','deadline'].forEach(f => {
+      const el = document.getElementById('job-'+f);
+      if (el) el.value = d[f]||'';
+    });
+    document.getElementById('job-status').value = d.status||'open';
+  } else if (key === 'news') {
+    ['cat','date','title','desc','icon'].forEach(f => {
+      const el = document.getElementById('news-'+f);
+      if (el) el.value = d[f]||'';
+    });
+    // 기존 이미지 목록 복원
+    initNewsImgGrid(d.images||[]);
+  } else if (key === 'company') {
+    document.getElementById('co-name').value = d.name||'';
+    document.getElementById('co-icon').value = d.icon||'';
+    document.getElementById('co-role').value = d.role||'';
+  } else if (key === 'inst') {
+    document.getElementById('inst-name').value   = d.name||'';
+    document.getElementById('inst-icon').value   = d.icon||'';
+    document.getElementById('inst-role').value   = d.role||'';
+    document.getElementById('inst-career').value = d.career||'';
+    document.getElementById('inst-tags').value   = (d.tags||[]).join(', ');
+  }
+}
+
+window.closeModal = (key) => {
+  document.getElementById('modal-'+key).classList.remove('open');
+  editId[key] = null;
+};
+window.closeModalOuter = (key, e) => {
+  if (e.target === document.getElementById('modal-'+key)) window.closeModal(key);
+};
+
+/* ════ 저장 ════ */
+window.saveItem = async (key) => {
+  const btn = document.getElementById('submit-'+key);
+  btn.disabled = true;
+  btn.textContent = '저장 중...';
+  try {
+    // 활동소식: 새로 추가된 파일만 Storage 업로드
+    if (key === 'news') {
+      const newImgs = window._newsImages.filter(img => !img.isExisting && img._file);
+      if (newImgs.length > 0) {
+        btn.textContent = `이미지 업로드 중... (0/${newImgs.length})`;
+        const prog = document.getElementById('newsUploadProgress');
+        const bar  = document.getElementById('newsProgressBar');
+        prog.style.display = 'block';
+        for (let i = 0; i < newImgs.length; i++) {
+          bar.style.width = `${Math.round(((i+1)/newImgs.length)*100)}%`;
+          btn.textContent = `이미지 업로드 중... (${i+1}/${newImgs.length})`;
+          const url = await uploadImage(newImgs[i]._file, `news/${Date.now()}_${newImgs[i].name}`, 'newsProgressBar', 'newsUploadProgress');
+          // 미리보기 URL(blob) → Storage URL로 교체
+          const idx = window._newsImages.indexOf(newImgs[i]);
+          window._newsImages[idx] = {url, name: newImgs[i].name, isExisting: true};
+        }
+        prog.style.display = 'none';
+      }
+    }
+    const data = buildData(key);
+    if (!data) { btn.disabled=false; btn.textContent='저장'; return; }
+
+    const id = editId[key];
+    if (id) {
+      await updateDoc(doc(db, COL[key], id), data);
+      toast('✅ 수정되었습니다.');
+    } else {
+      data.createdAt = serverTimestamp();
+      await addDoc(collection(db, COL[key]), data);
+      toast('✅ 추가되었습니다.');
+    }
+    window.closeModal(key);
+    await loadCol(key, COL[key], key==='inst'?'order':'createdAt');
+    renderList(key);
+    renderDash();
+  } catch(e) {
+    toast('❌ 오류: ' + e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = '저장';
+};
+
+function buildData(key) {
+  if (key === 'pf') {
+    const name  = document.getElementById('pf-name').value.trim();
+    const grade = document.getElementById('pf-grade').value;
+    const title = document.getElementById('pf-title').value.trim();
+    const type  = document.getElementById('pf-type').value;
+    if (!name||!grade||!title||!type) { alert('이름, 학년, 제목, 분야는 필수입니다.'); return null; }
+    const tools = document.getElementById('pf-tools').value.split(',').map(t=>t.trim()).filter(Boolean);
+    return { grade, type, thumb:TM[type]||'pt-prog', icon:IM[type]||'🎮', title,
+      author:`${GL[grade]} · ${name}`,
+      desc: document.getElementById('pf-desc').value.trim() || '등록된 설명 없음.',
+      tools: tools.length?tools:['미정'],
+      link: document.getElementById('pf-link').value.trim() || '#',
+      trophies: [] };
+  }
+  if (key === 'job') {
+    const title   = document.getElementById('job-title').value.trim();
+    const company = document.getElementById('job-company').value.trim();
+    if (!title||!company) { alert('제목과 회사명은 필수입니다.'); return null; }
+    return { tag:document.getElementById('job-tag').value.trim(), title, company,
+      location:document.getElementById('job-location').value.trim(),
+      deadline:document.getElementById('job-deadline').value.trim(),
+      status:document.getElementById('job-status').value };
+  }
+  if (key === 'news') {
+    const title = document.getElementById('news-title').value.trim();
+    if (!title) { alert('제목은 필수입니다.'); return null; }
+    return { cat:document.getElementById('news-cat').value.trim()||'소식',
+      date:document.getElementById('news-date').value.trim(), title,
+      desc:document.getElementById('news-desc').value.trim(),
+      icon:document.getElementById('news-icon').value.trim()||'📰',
+      images: (window._newsImages||[]).map(img => img.url),
+      imageUrl: (window._newsImages||[])[0]?.url || '' };
+  }
+  if (key === 'company') {
+    const name = document.getElementById('co-name').value.trim();
+    if (!name) { alert('기업명은 필수입니다.'); return null; }
+    return { name, icon:document.getElementById('co-icon').value.trim()||'🏢',
+      role:document.getElementById('co-role').value.trim() };
+  }
+  if (key === 'inst') {
+    const name = document.getElementById('inst-name').value.trim();
+    const role = document.getElementById('inst-role').value.trim();
+    if (!name||!role) { alert('이름과 분야는 필수입니다.'); return null; }
+    const tags = document.getElementById('inst-tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+    return { name, icon:document.getElementById('inst-icon').value.trim()||'👨‍🏫', role,
+      career:document.getElementById('inst-career').value.trim(), tags, order: cache.inst.length };
+  }
+  return null;
+}
+
+/* ════ 삭제 ════ */
+window.delItem = async (key, id) => {
+  if (!confirm('삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) return;
+  try {
+    await deleteDoc(doc(db, COL[key], id));
+    toast('🗑️ 삭제되었습니다.');
+    await loadCol(key, COL[key], key==='inst'?'order':'createdAt');
+    renderList(key);
+    renderDash();
+  } catch(e) { toast('❌ 삭제 오류: ' + e.message); }
+};
+
+/* ════ 취업 통계 ════ */
+const defaultStats = [
+  {id:'졸업생 취업률',   label:'졸업생 취업률',     value:'87', unit:'%'},
+  {id:'취업 기업 수',    label:'취업 기업 수',       value:'34', unit:'개사'},
+  {id:'평균 취업 소요기간',label:'평균 취업 소요기간', value:'3',  unit:'개월'},
+  {id:'전공 직무 취업률',label:'전공 직무 취업률',   value:'92', unit:'%'},
+];
+function renderStats() {
+  const data = cache.stats.length ? cache.stats : defaultStats;
+  document.getElementById('statsGrid').innerHTML = data.map(s => `
+    <div class="stat-card">
+      <label>${s.label||s.id}</label>
+      <input id="stat-${s.id}" value="${s.value}" placeholder="${s.value}">
+      <div class="hint">단위: ${s.unit}</div>
+    </div>`).join('');
+}
+window.saveStats = async () => {
+  const data = (cache.stats.length ? cache.stats : defaultStats);
+  try {
+    await Promise.all(data.map(s => {
+      const v = document.getElementById('stat-'+s.id)?.value.trim();
+      if (!v) return;
+      return setDoc(doc(db,'stats',s.id), {label:s.label||s.id, value:v, unit:s.unit}, {merge:true});
+    }));
+    await loadStats();
+    renderDash();
+    toast('✅ 취업 통계가 저장되었습니다.');
+  } catch(e) { toast('❌ 저장 오류: ' + e.message); }
+};
+
+/* ════ 초기 데이터 시드 ════ */
+window.seedData = async () => {
+  if (!confirm('샘플 데이터를 Firestore에 업로드하시겠습니까?')) return;
+  const btn = document.getElementById('seedBtn');
+  btn.disabled = true; btn.textContent = '업로드 중...';
+  try {
+    const seeds = [
+      { col:'portfolios', items:[
+        {grade:'1',type:'게임 프로그래밍',thumb:'pt-prog',icon:'⚙️',title:'2D 플랫포머 기초 프로젝트',author:'1학년 · 김지훈',desc:'Unity로 제작한 첫 2D 플랫포머.',tools:['Unity','C#'],link:'#',trophies:[]},
+        {grade:'2',type:'팀 프로젝트',thumb:'pt-prog',icon:'🎮',title:'탑다운 슈터 — Zombie Run',author:'2학년 · 팀 ZR (4인)',desc:'4인 팀 탑다운 슈터.',tools:['Unity','C#','Aseprite'],link:'#',trophies:[{rank:'2등',name:'Zombie Run',event:'2024 학교 경진대회'}]},
+        {grade:'3',type:'게임 프로그래밍',thumb:'pt-prog',icon:'🚀',title:'Unreal 3D 액션 데모',author:'3학년 · 정태양',desc:'Unreal Engine 5 3D 액션 데모.',tools:['Unreal5','C++'],link:'#',trophies:[{rank:'최우수상',name:'Unreal 액션 데모',event:'2025 졸업작품 경진대회'}]},
+      ]},
+      { col:'jobs', items:[
+        {tag:'게임 프로그래머',title:'Unity 클라이언트 개발자 (신입/인턴)',company:'스마일게이트 RPG',location:'서울 성동구',deadline:'2025.04.30 마감',status:'open'},
+        {tag:'게임 아티스트',title:'2D 캐릭터 원화가 (신입)',company:'넥슨 코리아',location:'서울 강남구',deadline:'2025.05.15 마감',status:'open'},
+        {tag:'게임 QA',title:'QA 엔지니어 신입 공채',company:'넷마블',location:'서울 구로구',deadline:'2025.04.10 마감',status:'close'},
+      ]},
+      { col:'news', items:[
+        {cat:'사업 선정',date:'2025. 03',title:'미래유망분야 고졸인력양성사업 공식 선정',desc:'SBS아카데미게임학원 신촌지점과 서울디지텍고가 고용노동부 선정 사업 기관으로 확정되었습니다.',icon:'🎮'},
+        {cat:'프로그램 운영',date:'2024. 09',title:'2학년 1DAY 조직적응력 향상 캠프 진행',desc:'팀워크와 협업 능력을 키우는 1DAY 캠프를 성공적으로 운영하였습니다.',icon:'🏕️'},
+        {cat:'설명회',date:'2024. 04',title:'1학년 대상 미래유망분야 진로 설명회 개최',desc:'게임 산업 현황과 진로 방향을 소개하는 설명회를 개최하여 학생들의 뜨거운 반응을 얻었습니다.',icon:'🎤'},
+      ]},
+      { col:'companies', items:[
+        {name:'넥슨 (Nexon)',icon:'🎮',role:'프로그래머 · 아티스트'},
+        {name:'넷마블 (Netmarble)',icon:'⚔️',role:'게임 기획 · QA'},
+        {name:'엔씨소프트 (NCSoft)',icon:'🏰',role:'프로그래머'},
+        {name:'크래프톤 (Krafton)',icon:'🌐',role:'아티스트 · 기획'},
+        {name:'스마일게이트',icon:'🎯',role:'프로그래머 · 아티스트'},
+        {name:'펄어비스',icon:'🚀',role:'아티스트'},
+        {name:'카카오게임즈',icon:'🌙',role:'기획 · QA'},
+        {name:'컴투스 (Com2uS)',icon:'⭐',role:'프로그래머'},
+      ]},
+      { col:'instructors', items:[
+        {name:'김현우 강사',icon:'⚙️',role:'게임 프로그래밍',career:'• 前 넥슨 코리아 클라이언트 개발팀 8년\n• Unity 공인 강사\n• 상업 게임 타이틀 5개 참여',tags:['Unity','C#','Physics'],order:0},
+        {name:'이수진 강사',icon:'🎨',role:'게임 아트',career:'• 前 펄어비스 캐릭터 아트팀 6년\n• 2D/3D 원화·모델링 전문',tags:['Maya','Photoshop','Substance'],order:1},
+        {name:'최지영 강사',icon:'🗺️',role:'게임 기획',career:'• 前 넷마블 기획팀 리드 7년\n• 레벨 디자인·시스템 기획 특화',tags:['GDD','레벨 디자인','Figma'],order:2},
+      ]},
+    ];
+    const statSeeds = [
+      {id:'졸업생 취업률',label:'졸업생 취업률',value:'87',unit:'%'},
+      {id:'취업 기업 수',label:'취업 기업 수',value:'34',unit:'개사'},
+      {id:'평균 취업 소요기간',label:'평균 취업 소요기간',value:'3',unit:'개월'},
+      {id:'전공 직무 취업률',label:'전공 직무 취업률',value:'92',unit:'%'},
+    ];
+
+    for (const {col, items} of seeds) {
+      for (const item of items) {
+        await addDoc(collection(db, col), {...item, createdAt: serverTimestamp()});
+      }
+    }
+    for (const s of statSeeds) {
+      await setDoc(doc(db,'stats',s.id), {label:s.label,value:s.value,unit:s.unit});
+    }
+    toast('✅ 샘플 데이터 업로드 완료!');
+    await loadAll();
+  } catch(e) { toast('❌ 업로드 오류: ' + e.message); btn.disabled=false; btn.textContent='초기 데이터 업로드'; }
+};
+
+
+/* ════ 이미지 업로드 공통 함수 ════ */
+async function uploadImage(file, path, progressBarId, progressWrapId) {
+  const storageRef = ref(storage, path);
+  const wrap = document.getElementById(progressWrapId);
+  const bar  = document.getElementById(progressBarId);
+  if (wrap) wrap.style.display = 'block';
+  if (bar)  bar.style.width = '30%';
+  const snap = await uploadBytes(storageRef, file);
+  if (bar) bar.style.width = '100%';
+  const url = await getDownloadURL(snap.ref);
+  setTimeout(() => { if (wrap) wrap.style.display = 'none'; if (bar) bar.style.width = '0%'; }, 800);
+  return url;
+}
+
+/* ════ 활동소식 다중 이미지 ════ */
+window._newsImages = []; // {url, name, isExisting}
+
+function initNewsImgGrid(existingUrls=[]) {
+  window._newsImages = existingUrls.map(url => ({url, name:'', isExisting:true}));
+  document.getElementById('news-image-files').value = '';
+  renderNewsImgGrid();
+}
+
+function renderNewsImgGrid() {
+  const grid = document.getElementById('newsImgGrid');
+  const imgs = window._newsImages;
+  // 기존 항목 유지 + 추가 버튼
+  const items = imgs.map((img, i) => `
+    <div class="news-img-item">
+      <img src="${img.url}" alt="사진 ${i+1}">
+      <button class="del-img-btn" onclick="removeNewsImg(${i})">✕</button>
+    </div>`).join('');
+  const addBtn = `
+    <div class="news-img-add" id="newsImgAddBtn">
+      <input type="file" id="news-image-files" accept="image/*" multiple onchange="addNewsImages(this)">
+      <span>📸</span>
+      <p>사진 추가</p>
+    </div>`;
+  grid.innerHTML = items + addBtn;
+  const count = document.getElementById('newsImgCount');
+  if (count) count.textContent = imgs.length > 0 ? `총 ${imgs.length}장` : '';
+}
+
+window.addNewsImages = (input) => {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      window._newsImages.push({url: e.target.result, name: file.name, isExisting: false, _file: file});
+      renderNewsImgGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+window.removeNewsImg = (idx) => {
+  window._newsImages.splice(idx, 1);
+  renderNewsImgGrid();
+};
+
+window.removeNewsImage = () => {
+  window._newsImages = [];
+  renderNewsImgGrid();
+};
+
+/* ════ closeModal에서 뉴스 이미지 초기화 ════ */
+const _origCloseModal = window.closeModal;
+window.closeModal = (key) => {
+  _origCloseModal(key);
+  if (key === 'news') {
+    window._newsImages = [];
+    document.getElementById('news-image-files').value = '';
+    renderNewsImgGrid();
+    document.getElementById('newsUploadProgress').style.display = 'none';
+    document.getElementById('newsImgCount').textContent = '';
+  }
+  if (key === 'banner') {
+    window.removeBannerImage();
+    document.getElementById('bannerUploadProgress').style.display = 'none';
+  }
+};
+
+/* ════ 배너 이미지 미리보기 ════ */
+window.previewBannerImage = (input) => {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('bannerPreviewImg').src = e.target.result;
+    document.getElementById('bannerImagePreview').style.display = 'block';
+    document.getElementById('bannerUploadZone').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+};
+window.removeBannerImage = () => {
+  document.getElementById('banner-image-file').value = '';
+  document.getElementById('banner-image-url').value = '';
+  document.getElementById('bannerPreviewImg').src = '';
+  document.getElementById('bannerImagePreview').style.display = 'none';
+  document.getElementById('bannerUploadZone').style.display = 'block';
+};
+
+/* ════ 배너 저장 ════ */
+window.saveBanner = async () => {
+  const file = document.getElementById('banner-image-file').files[0];
+  const existingUrl = document.getElementById('banner-image-url').value;
+  const editBannerId = window._editBannerId || null;
+
+  if (!file && !existingUrl) { alert('이미지를 선택해 주세요.'); return; }
+
+  const btn = document.getElementById('submit-banner');
+  btn.disabled = true; btn.textContent = '업로드 중...';
+  try {
+    let imageUrl = existingUrl;
+    if (file) {
+      imageUrl = await uploadImage(file, `banners/${Date.now()}_${file.name}`, 'bannerProgressBar', 'bannerUploadProgress');
+    }
+    const data = {
+      imageUrl,
+      title:   document.getElementById('banner-title').value.trim(),
+      sub:     document.getElementById('banner-sub').value.trim(),
+      link:    document.getElementById('banner-link').value.trim(),
+      order:   editBannerId ? (cache.banners||[]).find(b=>b._id===editBannerId)?.order ?? 0 : (cache.banners||[]).length,
+    };
+    if (editBannerId) {
+      await updateDoc(doc(db,'banners',editBannerId), data);
+      toast('✅ 배너가 수정되었습니다.');
+    } else {
+      data.createdAt = serverTimestamp();
+      await addDoc(collection(db,'banners'), data);
+      toast('✅ 배너가 추가되었습니다.');
+    }
+    window.closeModal('banner');
+    await loadBanners();
+    renderBannerList();
+    renderDash();
+  } catch(e) { toast('❌ 오류: ' + e.message); }
+  btn.disabled = false; btn.textContent = '저장';
+};
+
+/* ════ 배너 목록 로드 & 렌더 ════ */
+cache.banners = [];
+async function loadBanners() {
+  try {
+    const snap = await getDocs(query(collection(db,'banners'), orderBy('order','asc')));
+    cache.banners = snap.docs.map(d => ({_id:d.id, ...d.data()}));
+  } catch { cache.banners = []; }
+}
+
+function renderBannerList() {
+  const el = document.getElementById('list-banner');
+  if (!el) return;
+  if (!cache.banners.length) {
+    el.innerHTML = '<div class="empty-state"><div class="ei">🖼️</div><p>등록된 배너가 없습니다.<br>+ 배너 추가 버튼을 눌러 이미지를 올려주세요.</p></div>';
+    return;
+  }
+  el.innerHTML = cache.banners.map((b,i) => `
+    <div class="banner-item">
+      ${b.imageUrl
+        ? `<img class="banner-thumb" src="${b.imageUrl}" alt="${b.title||'배너'}">`
+        : `<div class="banner-thumb-empty">🖼️</div>`}
+      <div class="banner-info">
+        <div>
+          <h5>${b.title || '(제목 없음)'}</h5>
+          <p>${b.sub || ''}</p>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <div class="banner-order">
+            <button class="btn-order" onclick="moveBanner('${b._id}',-1)" title="위로">↑</button>
+            <button class="btn-order" onclick="moveBanner('${b._id}',1)" title="아래로">↓</button>
+          </div>
+          <button class="btn-edit" onclick="openBannerModal('${b._id}')">✏️ 수정</button>
+          <button class="btn-del"  onclick="delBanner('${b._id}','${b.imageUrl||''}')">🗑️</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+window.openModal = (key, id=null) => {
+  if (key === 'banner') { openBannerModal(null); return; }
+  _openModalOriginal(key, id);
+};
+
+/* ════ 배너 모달 열기 ════ */
+window.openBannerModal = (id=null) => {
+  window._editBannerId = id;
+  document.getElementById('title-banner').textContent = id ? '배너 수정' : '배너 추가';
+  document.getElementById('banner-title').value = '';
+  document.getElementById('banner-sub').value   = '';
+  document.getElementById('banner-link').value  = '';
+  document.getElementById('banner-image-url').value = '';
+  document.getElementById('bannerImagePreview').style.display = 'none';
+  document.getElementById('bannerUploadZone').style.display = 'block';
+  if (id) {
+    const b = cache.banners.find(x => x._id === id);
+    if (b) {
+      document.getElementById('banner-title').value = b.title||'';
+      document.getElementById('banner-sub').value   = b.sub||'';
+      document.getElementById('banner-link').value  = b.link||'';
+      document.getElementById('banner-image-url').value = b.imageUrl||'';
+      if (b.imageUrl) {
+        document.getElementById('bannerPreviewImg').src = b.imageUrl;
+        document.getElementById('bannerImagePreview').style.display = 'block';
+        document.getElementById('bannerUploadZone').style.display = 'none';
+      }
+    }
+  }
+  document.getElementById('modal-banner').classList.add('open');
+};
+
+/* 배너 순서 변경 */
+window.moveBanner = async (id, dir) => {
+  const idx = cache.banners.findIndex(b => b._id === id);
+  const swapIdx = idx + dir;
+  if (swapIdx < 0 || swapIdx >= cache.banners.length) return;
+  const a = cache.banners[idx];
+  const b = cache.banners[swapIdx];
+  await updateDoc(doc(db,'banners',a._id), {order: swapIdx});
+  await updateDoc(doc(db,'banners',b._id), {order: idx});
+  await loadBanners();
+  renderBannerList();
+};
+
+/* 배너 삭제 */
+window.delBanner = async (id, imageUrl) => {
+  if (!confirm('이 배너를 삭제하시겠습니까?')) return;
+  try {
+    await deleteDoc(doc(db,'banners',id));
+    if (imageUrl) { try { await deleteObject(ref(storage, imageUrl)); } catch {} }
+    toast('🗑️ 배너가 삭제되었습니다.');
+    await loadBanners();
+    renderBannerList();
+    renderDash();
+  } catch(e) { toast('❌ 삭제 오류: ' + e.message); }
+};
+
+/* ════ 토스트 ════ */
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+window.toast = toast;
+</script>
+</body>
+</html>
