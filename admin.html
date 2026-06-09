@@ -257,6 +257,38 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
 .news-img-add p { font-size: 11px; color: var(--text3); font-weight: 600; }
 .news-img-count { font-size: 12px; color: var(--text3); margin-top: 6px; }
 
+
+/* ═══ 이미지 URL 입력 탭 ═══ */
+.img-input-tabs {
+  display:flex; gap:0; border-bottom:2px solid var(--border); margin-bottom:14px;
+}
+.img-tab-btn {
+  padding:8px 20px; font-size:13px; font-weight:700; color:var(--text2);
+  background:none; border:none; border-bottom:3px solid transparent;
+  cursor:pointer; font-family:inherit; transition:color .18s, border-color .18s;
+  margin-bottom:-2px;
+}
+.img-tab-btn.active { color:var(--primary); border-bottom-color:var(--primary); }
+.img-tab-panel { display:none; }
+.img-tab-panel.active { display:block; }
+.url-input-row {
+  display:flex; gap:8px; margin-bottom:8px; align-items:center;
+}
+.url-input-row input {
+  flex:1; padding:9px 12px; border-radius:8px; border:1.5px solid var(--border);
+  font-size:13px; font-family:inherit; outline:none; transition:border-color .18s;
+  background:var(--bg);
+}
+.url-input-row input:focus { border-color:var(--primary); background:#fff; }
+.btn-url-add {
+  padding:9px 16px; border-radius:8px; background:var(--primary); color:#fff;
+  font-size:13px; font-weight:700; border:none; cursor:pointer; white-space:nowrap;
+  font-family:inherit; transition:background .18s;
+}
+.btn-url-add:hover { background:var(--primary-d); }
+.url-hint { font-size:11px; color:var(--text3); line-height:1.7; margin-bottom:10px; }
+.url-hint code { background:var(--bg); padding:2px 6px; border-radius:4px; font-size:11px; color:var(--primary); border:1px solid var(--border); }
+
 </style>
 </head>
 <body>
@@ -457,18 +489,40 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text
     <div class="aform-group"><label>제목</label><input id="news-title" placeholder="소식 제목"></div>
     <div class="aform-group"><label>내용</label><textarea id="news-desc" placeholder="소식 내용"></textarea></div>
     <div class="aform-group">
-      <label>사진 첨부 <span style="font-size:10px;color:var(--text3);font-weight:400;">(여러 장 가능 · JPG/PNG · 장당 최대 5MB)</span></label>
-      <div class="news-img-grid" id="newsImgGrid">
-        <div class="news-img-add" id="newsImgAddBtn">
-          <input type="file" id="news-image-files" accept="image/*" multiple onchange="addNewsImages(this)">
-          <span>📸</span>
-          <p>사진 추가</p>
+      <label>사진 첨부</label>
+      <!-- 탭 전환 -->
+      <div class="img-input-tabs">
+        <button class="img-tab-btn active" onclick="switchImgTab('file',this)">📁 파일 업로드</button>
+        <button class="img-tab-btn" onclick="switchImgTab('url',this)">🔗 URL 직접 입력</button>
+      </div>
+      <!-- 파일 업로드 탭 -->
+      <div class="img-tab-panel active" id="imgTabFile">
+        <div class="news-img-grid" id="newsImgGrid">
+          <div class="news-img-add" id="newsImgAddBtn">
+            <input type="file" id="news-image-files" accept="image/*" multiple onchange="addNewsImages(this)">
+            <span>📸</span>
+            <p>사진 추가</p>
+          </div>
+        </div>
+        <div class="news-img-count" id="newsImgCount"></div>
+        <div class="upload-progress" id="newsUploadProgress" style="margin-top:8px;">
+          <div class="upload-progress-bar" id="newsProgressBar"></div>
         </div>
       </div>
-      <div class="news-img-count" id="newsImgCount"></div>
-      <div class="upload-progress" id="newsUploadProgress" style="margin-top:8px;">
-        <div class="upload-progress-bar" id="newsProgressBar"></div>
+      <!-- URL 입력 탭 -->
+      <div class="img-tab-panel" id="imgTabUrl">
+        <p class="url-hint">
+          GitHub에 올린 이미지 주소를 입력하세요.<br>
+          예시: <code>https://raw.githubusercontent.com/loveheev-collab/sbs-digitech-homepage/main/이미지파일명.jpg</code>
+        </p>
+        <div class="url-input-row">
+          <input type="url" id="newsUrlInput" placeholder="https://raw.githubusercontent.com/...">
+          <button class="btn-url-add" onclick="addNewsImageUrl()">추가</button>
+        </div>
       </div>
+      <!-- 공통 미리보기 그리드 (URL 추가 시 여기에 표시) -->
+      <div class="news-img-grid" id="newsUrlImgGrid" style="margin-top:10px;"></div>
+      <div class="news-img-count" id="newsUrlImgCount"></div>
     </div>
     <div class="aform-group"><label>썸네일 이모지 <span style="font-size:10px;color:var(--text3);font-weight:400;">(사진 없을 때 표시)</span></label><input id="news-icon" placeholder="🎮" maxlength="2"></div>
     <div class="amodal-actions">
@@ -799,6 +853,7 @@ function fillForm(key, d) {
     });
     // 기존 이미지 목록 복원
     initNewsImgGrid(d.images||[]);
+    renderNewsUrlGrid();
   } else if (key === 'company') {
     document.getElementById('co-name').value = d.name||'';
     document.getElementById('co-icon').value = d.icon||'';
@@ -1076,6 +1131,49 @@ window.addNewsImages = (input) => {
   });
 };
 
+
+/* ════ 이미지 탭 전환 ════ */
+window.switchImgTab = (tab, btn) => {
+  document.querySelectorAll('.img-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.img-tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('imgTab' + (tab === 'file' ? 'File' : 'Url')).classList.add('active');
+};
+
+/* ════ URL로 이미지 추가 ════ */
+window.addNewsImageUrl = () => {
+  const input = document.getElementById('newsUrlInput');
+  const url = input.value.trim();
+  if (!url) { alert('URL을 입력해 주세요.'); return; }
+  if (!url.startsWith('http')) { alert('올바른 URL 형식이 아닙니다.'); return; }
+
+  // _newsImages에 추가 (isExisting:true — 이미 올라간 URL)
+  window._newsImages.push({ url, name: url.split('/').pop(), isExisting: true });
+  input.value = '';
+  renderNewsImgGrid();
+  renderNewsUrlGrid();
+  toast('✅ 이미지 URL이 추가되었습니다.');
+};
+
+/* URL 탭 미리보기 그리드 렌더 */
+function renderNewsUrlGrid() {
+  const grid = document.getElementById('newsUrlImgGrid');
+  const count = document.getElementById('newsUrlImgCount');
+  if (!grid) return;
+  const imgs = window._newsImages;
+  if (!imgs.length) { grid.innerHTML = ''; if(count) count.textContent = ''; return; }
+  grid.innerHTML = imgs.map((img, i) => `
+    <div class="news-img-item">
+      <img src="${img.url}" alt="사진 ${i+1}" onerror="this.style.background='#eee';this.alt='이미지 로드 실패'">
+      <button class="del-img-btn" onclick="removeNewsImg(${i})">✕</button>
+    </div>`).join('') + `
+    <div class="news-img-add" style="cursor:default;">
+      <span style="font-size:18px;">🖼️</span>
+      <p style="font-size:10px;">${imgs.length}장</p>
+    </div>`;
+  if (count) count.textContent = `총 ${imgs.length}장`;
+}
+
 window.removeNewsImg = (idx) => {
   window._newsImages.splice(idx, 1);
   renderNewsImgGrid();
@@ -1093,9 +1191,14 @@ window.closeModal = (key) => {
   if (key === 'news') {
     window._newsImages = [];
     document.getElementById('news-image-files').value = '';
+    document.getElementById('newsUrlInput').value = '';
     renderNewsImgGrid();
+    renderNewsUrlGrid();
     document.getElementById('newsUploadProgress').style.display = 'none';
     document.getElementById('newsImgCount').textContent = '';
+    // 탭 초기화 (파일 탭으로)
+    document.querySelectorAll('.img-tab-btn').forEach((b,i) => b.classList.toggle('active', i===0));
+    document.querySelectorAll('.img-tab-panel').forEach((p,i) => p.classList.toggle('active', i===0));
   }
   if (key === 'banner') {
     window.removeBannerImage();
