@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SBS아카데미게임학원 신촌 × 서울디지텍고 | 미래유망분야 고졸인력양성사업</title>
+<title>2026 미래유망분야 고졸인력 양성사업 | 서울디지텍고등학교 × SBS아카데미게임학원 신촌</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -675,6 +675,86 @@ footer { background:#1a2340; color:rgba(255,255,255,.75); padding:52px 0 32px; }
   .news-detail-hero-inner { padding:36px 20px 28px; }
 }
 
+
+/* ═══ 로고 업데이트 ═══ */
+.h-logo .logo-mark {
+  display:flex; align-items:center; gap:6px;
+  background:none; box-shadow:none; border-radius:0;
+  width:auto; height:auto; padding:0;
+}
+.logo-img {
+  width:36px; height:36px; border-radius:8px; object-fit:contain;
+  background:#fff; padding:2px;
+}
+.logo-img-sbs {
+  width:36px; height:36px; border-radius:8px; object-fit:contain;
+  background:var(--primary); padding:3px; display:flex; align-items:center; justify-content:center;
+  font-size:16px; color:#fff; font-weight:900; flex-shrink:0;
+}
+.logo-divider { font-size:14px; color:var(--text3); font-weight:300; }
+.h-logo .logo-text strong { font-size:13px; }
+.h-logo .logo-text span   { font-size:10px; }
+
+
+/* ═══ 채용공고 상세 페이지 ═══ */
+.job-detail-hero {
+  padding-top:var(--header-h);
+  background:linear-gradient(135deg,#0041a8,#0057d9 55%,#1e7cf7);
+  position:relative; overflow:hidden;
+}
+.job-detail-hero::before {
+  content:''; position:absolute; inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E");
+}
+.job-detail-hero-inner {
+  max-width:1280px; margin:0 auto; padding:48px 32px 40px;
+  position:relative; z-index:2;
+}
+.job-detail-tag {
+  display:inline-flex; align-items:center; gap:6px;
+  font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase;
+  color:#fff; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.3);
+  padding:5px 14px; border-radius:100px; margin-bottom:16px;
+}
+.job-detail-hero h1 {
+  font-size:clamp(1.6rem,3vw,2.6rem); font-weight:900; color:#fff; line-height:1.25; margin-bottom:16px;
+}
+.job-detail-meta { display:flex; flex-wrap:wrap; gap:12px; }
+.job-detail-meta span {
+  font-size:13px; color:rgba(255,255,255,.8);
+  background:rgba(255,255,255,.12); padding:5px 14px; border-radius:100px;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.job-detail-body { max-width:900px; margin:0 auto; padding:48px 32px 80px; }
+.job-detail-card {
+  background:var(--card); border-radius:18px; padding:32px;
+  border:1.5px solid var(--border); margin-bottom:20px;
+}
+.job-detail-card h3 {
+  font-size:15px; font-weight:800; color:var(--text);
+  margin-bottom:18px; padding-bottom:12px; border-bottom:2px solid var(--border);
+  display:flex; align-items:center; gap:8px;
+}
+.job-detail-info-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:14px;
+}
+.jdi-item { background:var(--bg); border-radius:10px; padding:14px 16px; }
+.jdi-label { font-size:11px; font-weight:800; color:var(--text3); letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; }
+.jdi-value { font-size:14px; font-weight:700; color:var(--text); }
+.job-apply-btn {
+  display:block; width:100%; padding:16px; border-radius:14px;
+  background:var(--primary); color:#fff; font-size:16px; font-weight:800;
+  border:none; cursor:pointer; font-family:inherit; text-align:center;
+  transition:background .18s, transform .18s; text-decoration:none;
+  box-shadow:0 4px 16px rgba(0,87,217,.3); margin-top:24px;
+}
+.job-apply-btn:hover { background:var(--primary-d); transform:translateY(-2px); }
+.job-card { cursor:pointer; }
+@media(max-width:640px){
+  .job-detail-body { padding:28px 20px 60px; }
+  .job-detail-info-grid { grid-template-columns:1fr; }
+}
+
 </style>
 
 <!-- ★ Firebase SDK ★ -->
@@ -724,8 +804,9 @@ async function syncFromFirestore() {
       if (jobEl) {
         const listEl = jobEl.querySelector('.job-list');
         if (listEl) {
-          listEl.innerHTML = jobs.map(j => `
-            <div class="job-card">
+          window._jobCache = jobs;
+          listEl.innerHTML = jobs.map((j,i) => `
+            <div class="job-card" onclick="openJobDetail(${i})">
               <div class="job-left">
                 <div class="job-tag">${j.tag||''}</div>
                 <h5>${j.title}</h5>
@@ -745,6 +826,7 @@ async function syncFromFirestore() {
       if (newsGrid) {
         const colors = ['nt-b','nt-o','nt-g'];
         // 전역 뉴스 캐시 저장
+        window._newsCache = newsItems;
         window._newsCache = newsItems;
         newsGrid.innerHTML = newsItems.map((n,i) => `
           <div class="news-card" onclick="openNewsDetail('${n.id||i}')" style="cursor:pointer;">
@@ -830,10 +912,14 @@ window.addEventListener('DOMContentLoaded', () => {
 <header>
   <div class="header-inner">
     <a class="h-logo" onclick="showPage('main');return false;" href="#">
-      <div class="logo-mark">🎮</div>
+      <div class="logo-mark">
+        <div class="logo-img-sbs">SBS</div>
+        <span class="logo-divider">×</span>
+        <div style="width:36px;height:36px;border-radius:8px;background:#e8f0fd;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🏫</div>
+      </div>
       <div class="logo-text">
-        <strong>SBS아카데미게임학원 신촌</strong>
-        <span>× 서울디지텍고등학교 미래유망분야 고졸인력양성사업</span>
+        <strong>2026 미래유망분야 고졸인력 양성사업</strong>
+        <span>서울디지텍고등학교 × SBS아카데미게임학원 신촌</span>
       </div>
     </a>
     <nav class="h-nav">
@@ -926,10 +1012,36 @@ window.addEventListener('DOMContentLoaded', () => {
         <p class="sec-desc" style="text-align:right;max-width:280px">학교 정규 수업과 연계된<br>SBS아카데미의 실무 전문 훈련</p>
       </div>
       <div class="curr-grid">
-        <div class="curr-card"><div class="curr-num">01 / Programming</div><div class="curr-icon">⚙️</div><h3>게임 프로그래밍</h3><p>Unity·Unreal 기반 게임 개발, C# / C++ 프로그래밍, 물리 엔진 구현 및 AI 로직 설계.</p><div class="curr-tags"><span class="curr-tag">Unity</span><span class="curr-tag">Unreal</span><span class="curr-tag">C#</span><span class="curr-tag">C++</span></div></div>
-        <div class="curr-card"><div class="curr-num">02 / Art</div><div class="curr-icon">🎨</div><h3>게임 아트 &amp; 그래픽</h3><p>2D/3D 캐릭터·배경·UI 디자인, 애니메이션, 이펙트 등 비주얼 전 영역 게임 아트 훈련.</p><div class="curr-tags"><span class="curr-tag">Maya</span><span class="curr-tag">Photoshop</span><span class="curr-tag">Substance</span></div></div>
-        <div class="curr-card"><div class="curr-num">03 / Design</div><div class="curr-icon">🗺️</div><h3>게임 기획 &amp; 레벨 디자인</h3><p>게임 시스템 설계, 스토리텔링, 레벨 디자인부터 GDD 작성까지 기획자 핵심 역량.</p><div class="curr-tags"><span class="curr-tag">GDD</span><span class="curr-tag">밸런싱</span><span class="curr-tag">레벨 디자인</span></div></div>
-        <div class="curr-card"><div class="curr-num">04 / Portfolio</div><div class="curr-icon">🏆</div><h3>포트폴리오 &amp; 취업 연계</h3><p>개인/팀 프로젝트 포트폴리오 제작, 현직 멘토링, 게임사 인턴십 연계 프로그램 운영.</p><div class="curr-tags"><span class="curr-tag">프로젝트</span><span class="curr-tag">멘토링</span><span class="curr-tag">취업연계</span></div></div>
+        <div class="curr-card">
+          <div class="curr-num">1학년 / Year 1</div>
+          
+          <h3>기초 역량 &amp; 진로 탐색</h3>
+          <p>게임 산업 전반 이해, 기초 프로그래밍·드로잉 입문, 진로 설명회 참가 및 현장 탐방으로 방향을 설정합니다.</p>
+          <div class="curr-tags">
+            <span class="curr-tag">진로 설명회</span><span class="curr-tag">기초 프로그래밍</span>
+            <span class="curr-tag">드로잉 기초</span><span class="curr-tag">업계 탐방</span>
+          </div>
+        </div>
+        <div class="curr-card">
+          <div class="curr-num">2학년 / Year 2</div>
+          
+          <h3>전공 심화 &amp; 팀 프로젝트</h3>
+          <p>프로그래밍·아트·기획 중 전공 분야를 심화 학습하고, 1DAY 캠프 및 팀 게임 제작 프로젝트에 참여합니다.</p>
+          <div class="curr-tags">
+            <span class="curr-tag">Unity / Unreal 심화</span><span class="curr-tag">팀 프로젝트</span>
+            <span class="curr-tag">1DAY 캠프</span><span class="curr-tag">조직적응력 향상</span>
+          </div>
+        </div>
+        <div class="curr-card">
+          <div class="curr-num">3학년 / Year 3</div>
+          
+          <h3>포트폴리오 완성 &amp; 취업</h3>
+          <p>완성도 높은 포트폴리오 제작, 현직자 멘토링, 게임사 인턴십 및 채용 연계까지 취업 전 과정을 지원합니다.</p>
+          <div class="curr-tags">
+            <span class="curr-tag">포트폴리오 완성</span><span class="curr-tag">현직자 멘토링</span>
+            <span class="curr-tag">인턴십 연계</span><span class="curr-tag">취업 지원</span>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -1128,11 +1240,11 @@ window.addEventListener('DOMContentLoaded', () => {
       <div class="sec-eyebrow">채용 공고</div>
       <h2 class="sec-title" style="margin-bottom:36px">지금 열린 게임사 채용 정보</h2>
       <div class="job-list">
-        <div class="job-card"><div class="job-left"><div class="job-tag">게임 프로그래머</div><h5>Unity 클라이언트 개발자 (신입/인턴)</h5><p>스마일게이트 RPG · 서울 성동구 · 2025.04.30 마감</p></div><span class="job-badge jb-open">모집중</span></div>
-        <div class="job-card"><div class="job-left"><div class="job-tag">게임 아티스트</div><h5>2D 캐릭터 원화가 (신입)</h5><p>넥슨 코리아 · 서울 강남구 · 2025.05.15 마감</p></div><span class="job-badge jb-open">모집중</span></div>
-        <div class="job-card"><div class="job-left"><div class="job-tag">게임 기획</div><h5>콘텐츠 기획자 인턴십</h5><p>카카오게임즈 · 판교 · 2025.04.20 마감</p></div><span class="job-badge jb-open">모집중</span></div>
-        <div class="job-card"><div class="job-left"><div class="job-tag">게임 QA</div><h5>QA 엔지니어 신입 공채</h5><p>넷마블 · 서울 구로구 · 2025.04.10 마감</p></div><span class="job-badge jb-close">마감</span></div>
-        <div class="job-card"><div class="job-left"><div class="job-tag">3D 아티스트</div><h5>3D 배경/환경 아티스트 (신입 우대)</h5><p>크래프톤 · 서울 강남구 · 2025.05.31 마감</p></div><span class="job-badge jb-open">모집중</span></div>
+        <div class="job-card" onclick="openJobDetail(0,true)"><div class="job-left"><div class="job-tag">게임 프로그래머</div><h5>Unity 클라이언트 개발자 (신입/인턴)</h5><p>스마일게이트 RPG · 서울 성동구 · 2025.04.30 마감</p></div><span class="job-badge jb-open">모집중</span></div>
+        <div class="job-card" onclick="openJobDetail(1,true)"><div class="job-left"><div class="job-tag">게임 아티스트</div><h5>2D 캐릭터 원화가 (신입)</h5><p>넥슨 코리아 · 서울 강남구 · 2025.05.15 마감</p></div><span class="job-badge jb-open">모집중</span></div>
+        <div class="job-card" onclick="openJobDetail(2,true)"><div class="job-left"><div class="job-tag">게임 기획</div><h5>콘텐츠 기획자 인턴십</h5><p>카카오게임즈 · 판교 · 2025.04.20 마감</p></div><span class="job-badge jb-open">모집중</span></div>
+        <div class="job-card" onclick="openJobDetail(3,true)"><div class="job-left"><div class="job-tag">게임 QA</div><h5>QA 엔지니어 신입 공채</h5><p>넷마블 · 서울 구로구 · 2025.04.10 마감</p></div><span class="job-badge jb-close">마감</span></div>
+        <div class="job-card" onclick="openJobDetail(4,true)"><div class="job-left"><div class="job-tag">3D 아티스트</div><h5>3D 배경/환경 아티스트 (신입 우대)</h5><p>크래프톤 · 서울 강남구 · 2025.05.31 마감</p></div><span class="job-badge jb-open">모집중</span></div>
       </div>
     </div>
     <!-- 포트폴리오 -->
@@ -1173,6 +1285,63 @@ window.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- ════ 학생 상세 페이지 ════ -->
+<!-- ════ 채용공고 상세 페이지 ════ -->
+<div id="page-job" class="page hidden">
+  <div class="job-detail-hero">
+    <div class="job-detail-hero-inner">
+      <button class="back-btn" onclick="showPage('career','jobs')">← 채용공고 목록으로 돌아가기</button>
+      <div class="job-detail-tag" id="jdTag">채용공고</div>
+      <h1 id="jdTitle">공고 제목</h1>
+      <div class="job-detail-meta">
+        <span id="jdCompany">🏢 회사명</span>
+        <span id="jdLocation">📍 지역</span>
+        <span id="jdDeadline">📅 마감일</span>
+        <span id="jdStatus">●</span>
+      </div>
+    </div>
+  </div>
+  <div class="job-detail-body">
+    <div class="job-detail-card">
+      <h3>📋 공고 상세 정보</h3>
+      <div class="job-detail-info-grid">
+        <div class="jdi-item"><div class="jdi-label">직무 분야</div><div class="jdi-value" id="jdTagDetail">-</div></div>
+        <div class="jdi-item"><div class="jdi-label">회사명</div><div class="jdi-value" id="jdCompanyDetail">-</div></div>
+        <div class="jdi-item"><div class="jdi-label">근무지</div><div class="jdi-value" id="jdLocationDetail">-</div></div>
+        <div class="jdi-item"><div class="jdi-label">마감일</div><div class="jdi-value" id="jdDeadlineDetail">-</div></div>
+      </div>
+    </div>
+    <div class="job-detail-card">
+      <h3>💡 지원 안내</h3>
+      <p style="font-size:14px;color:var(--text2);line-height:1.9;">
+        본 채용 공고는 <strong>SBS아카데미게임학원 신촌지점 × 서울디지텍고등학교</strong>
+        미래유망분야 고졸인력양성사업을 통해 연계된 공고입니다.<br><br>
+        자세한 지원 방법 및 우대사항은 담당 취업 지원팀에 문의하거나
+        아래 버튼을 통해 공식 채용 페이지를 확인해 주세요.
+      </p>
+      <a class="job-apply-btn" id="jdApplyBtn" href="#" target="_blank">🔗 채용 공고 바로가기</a>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <strong>SBS아카데미게임학원 신촌지점 × 서울디지텍고등학교</strong>
+          <p>미래유망분야 고졸인력양성사업 공식 파트너십</p>
+        </div>
+        <nav class="footer-nav">
+          <button onclick="showPage('main')">← 메인 홈</button>
+          <button onclick="showPage('career','jobs')">채용공고 목록</button>
+          <button onclick="showPage('career','overview')">취업정보</button>
+        </nav>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 SBS아카데미게임학원 신촌지점 · 서울디지텍고등학교. All rights reserved.</p>
+        <span class="gov-badge">🏛️ 고용노동부 선정 사업</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
 <!-- ════ 활동소식 상세 페이지 ════ -->
 <div id="page-news" class="page hidden">
   <div class="news-detail-hero">
@@ -1222,7 +1391,7 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="sm-hero-inner">
       <div class="sm-avatar" id="smAvatar">⚙️</div>
       <div class="sm-hero-info">
-        <button class="back-btn" onclick="showPage('career','portfolio')" style="margin-bottom:14px;">← 포트폴리오 전시관으로 돌아가기</button>
+        <button class="back-btn" onclick="showPage('career','portfolio');renderPf('all');" style="margin-bottom:14px;">← 포트폴리오 전시관으로 돌아가기</button>
         <h1 id="smName">학생 이름</h1>
         <div class="sm-meta" id="smMeta">학년 · 분야</div>
         <div class="sm-badge" id="smBadge">📚 성장 중인 학생</div>
@@ -1287,7 +1456,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <script>
 /* ════════ PAGE SYSTEM ════════ */
-const PAGES = { main:'page-main', about:'page-about', career:'page-career', student:'page-student', news:'page-news' };
+const PAGES = { main:'page-main', about:'page-about', career:'page-career', student:'page-student', news:'page-news', job:'page-job' };
 
 function showPage(pageKey, panelKey) {
   // 모든 페이지 숨기기
@@ -1609,6 +1778,43 @@ window.addEventListener('DOMContentLoaded', restoreFromHash);
 // 브라우저 뒤로가기/앞으로가기 지원
 window.addEventListener('popstate', restoreFromHash);
 
+
+
+/* ════ 채용공고 상세 페이지 ════ */
+const _staticJobs = [
+  {tag:'게임 프로그래머',title:'Unity 클라이언트 개발자 (신입/인턴)',company:'스마일게이트 RPG',location:'서울 성동구',deadline:'2025.04.30 마감',status:'open',link:''},
+  {tag:'게임 아티스트',title:'2D 캐릭터 원화가 (신입)',company:'넥슨 코리아',location:'서울 강남구',deadline:'2025.05.15 마감',status:'open',link:''},
+  {tag:'게임 기획',title:'콘텐츠 기획자 인턴십',company:'카카오게임즈',location:'판교',deadline:'2025.04.20 마감',status:'open',link:''},
+  {tag:'게임 QA',title:'QA 엔지니어 신입 공채',company:'넷마블',location:'서울 구로구',deadline:'2025.04.10 마감',status:'close',link:''},
+  {tag:'3D 아티스트',title:'3D 배경/환경 아티스트 (신입 우대)',company:'크래프톤',location:'서울 강남구',deadline:'2025.05.31 마감',status:'open',link:''},
+];
+
+window.openJobDetail = (idx, useStatic=false) => {
+  const jobs = useStatic ? _staticJobs : (window._jobCache || _staticJobs);
+  const j = jobs[idx];
+  if (!j) return;
+
+  document.getElementById('jdTag').textContent          = j.tag || '채용공고';
+  document.getElementById('jdTitle').textContent        = j.title || '';
+  document.getElementById('jdCompany').textContent      = '🏢 ' + (j.company||'');
+  document.getElementById('jdLocation').textContent     = '📍 ' + (j.location||'');
+  document.getElementById('jdDeadline').textContent     = '📅 ' + (j.deadline||'');
+  document.getElementById('jdStatus').textContent       = j.status==='open' ? '🟢 모집중' : '🔴 마감';
+  document.getElementById('jdTagDetail').textContent    = j.tag || '-';
+  document.getElementById('jdCompanyDetail').textContent= j.company || '-';
+  document.getElementById('jdLocationDetail').textContent= j.location || '-';
+  document.getElementById('jdDeadlineDetail').textContent= j.deadline || '-';
+
+  const applyBtn = document.getElementById('jdApplyBtn');
+  if (j.link && j.link !== '#' && j.link !== '') {
+    applyBtn.href = j.link;
+    applyBtn.style.display = 'block';
+  } else {
+    applyBtn.style.display = 'none';
+  }
+
+  showPage('job');
+};
 
 /* ════ 활동소식 상세 페이지 ════ */
 let _ndCurrentSlide = 0;
