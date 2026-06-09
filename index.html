@@ -925,7 +925,7 @@ window.addEventListener('DOMContentLoaded', () => {
       <button onclick="showPage('about','org')">파트너십 소개</button>
       <a href="#curriculum" onclick="showPage('main')">교육과정</a>
       <a href="#roadmap" onclick="showPage('main')">로드맵</a>
-      <a href="#news" onclick="showPage('main');setTimeout(()=>{ document.getElementById('news').scrollIntoView({behavior:'smooth'}); },100);">활동소식</a>
+      <a href="#news" onclick="showPage('main');loadNewsSection();">활동소식</a>
       <button class="btn-career" onclick="showPage('career','overview')">💼 취업정보</button>
     </nav>
     <button class="hamburger" id="hamburger" onclick="toggleMobile()">
@@ -937,7 +937,7 @@ window.addEventListener('DOMContentLoaded', () => {
   <button onclick="closeMobile();showPage('about','org')">🏛️ 파트너십 소개</button>
   <a href="#curriculum" onclick="closeMobile();showPage('main')">📚 교육과정</a>
   <a href="#roadmap" onclick="closeMobile();showPage('main')">🗺️ 로드맵</a>
-  <a href="#news" onclick="closeMobile();showPage('main');setTimeout(()=>{ document.getElementById('news').scrollIntoView({behavior:'smooth'}); },100);">📰 활동소식</a>
+  <a href="#news" onclick="closeMobile();showPage('main');loadNewsSection();">📰 활동소식</a>
   <button class="m-career" onclick="closeMobile();showPage('career','overview')">💼 취업정보</button>
 </nav>
 
@@ -1077,7 +1077,7 @@ window.addEventListener('DOMContentLoaded', () => {
           <button onclick="showPage('about','org')">파트너십 소개</button>
           <a href="#curriculum" onclick="showPage('main')">교육과정</a>
           <a href="#roadmap" onclick="showPage('main')">로드맵</a>
-          <a href="#news" onclick="showPage('main');setTimeout(()=>{ document.getElementById('news').scrollIntoView({behavior:'smooth'}); },100);">활동소식</a>
+          <a href="#news" onclick="showPage('main');loadNewsSection();">활동소식</a>
           <button onclick="showPage('career','overview')">취업정보</button>
         </nav>
       </div>
@@ -1889,6 +1889,43 @@ window.openNewsDetail = (id) => {
 window.openNewsDetailStatic = (news) => {
   renderNewsDetail(news);
   showPage('news');
+};
+
+
+/* ════ 활동소식 섹션 로드 ════ */
+window.loadNewsSection = () => {
+  setTimeout(() => {
+    const newsEl = document.getElementById('news');
+    if (newsEl) newsEl.scrollIntoView({behavior:'smooth'});
+  }, 150);
+
+  // Firebase에서 최신 뉴스 다시 로드
+  if (window.__db) {
+    import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js')
+      .then(({getFirestore, collection, getDocs, query, orderBy}) => {
+        getDocs(query(collection(window.__db,'news'), orderBy('createdAt','desc')))
+          .then(snap => {
+            const newsGrid = document.querySelector('.news-grid');
+            if (!newsGrid) return;
+            if (snap.empty) return; // 데이터 없으면 기본 카드 유지
+            const items = snap.docs.map(d => ({id:d.id,...d.data()}));
+            window._newsCache = items;
+            const colors = ['nt-b','nt-o','nt-g'];
+            newsGrid.innerHTML = items.map((n,i) => `
+              <div class="news-card" onclick="openNewsDetail('${n.id||i}')" style="cursor:pointer;">
+                ${n.images && n.images[0]
+                  ? `<div class="news-thumb" style="padding:0;height:150px;"><img src="${n.images[0]}" style="width:100%;height:100%;object-fit:cover;" alt=""></div>`
+                  : `<div class="news-thumb ${colors[i%3]}">${n.icon||'📰'}</div>`}
+                <div class="news-body">
+                  <div class="news-cat">${n.cat||''}</div>
+                  <h4>${n.title}</h4>
+                  <p>${n.desc||''}</p>
+                  <div class="news-date">${n.date||''} ${n.images&&n.images.length>0?`· 📸 ${n.images.length}장`:''}</div>
+                </div>
+              </div>`).join('');
+          }).catch(() => {});
+      }).catch(() => {});
+  }
 };
 
 /* ════════ SCROLL REVEAL ════════ */
