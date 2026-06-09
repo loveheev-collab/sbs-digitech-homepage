@@ -1014,7 +1014,7 @@ window.addEventListener('DOMContentLoaded', () => {
       <div class="curr-grid">
         <div class="curr-card">
           <div class="curr-num">1학년 / Year 1</div>
-          
+          <div class="curr-icon">🌱</div>
           <h3>기초 역량 &amp; 진로 탐색</h3>
           <p>게임 산업 전반 이해, 기초 프로그래밍·드로잉 입문, 진로 설명회 참가 및 현장 탐방으로 방향을 설정합니다.</p>
           <div class="curr-tags">
@@ -1024,7 +1024,7 @@ window.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="curr-card">
           <div class="curr-num">2학년 / Year 2</div>
-          
+          <div class="curr-icon">🔥</div>
           <h3>전공 심화 &amp; 팀 프로젝트</h3>
           <p>프로그래밍·아트·기획 중 전공 분야를 심화 학습하고, 1DAY 캠프 및 팀 게임 제작 프로젝트에 참여합니다.</p>
           <div class="curr-tags">
@@ -1034,7 +1034,7 @@ window.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="curr-card">
           <div class="curr-num">3학년 / Year 3</div>
-          
+          <div class="curr-icon">🚀</div>
           <h3>포트폴리오 완성 &amp; 취업</h3>
           <p>완성도 높은 포트폴리오 제작, 현직자 멘토링, 게임사 인턴십 및 채용 연계까지 취업 전 과정을 지원합니다.</p>
           <div class="curr-tags">
@@ -1474,9 +1474,16 @@ function showPage(pageKey, panelKey) {
   // 패널 전환
   if (panelKey) switchPanel(pageKey, panelKey);
   closeMobile();
-  // URL 해시에 현재 페이지 저장 (새로고침 복원용)
+  // URL 해시에 현재 페이지 저장 + 뒤로가기 지원
   const hash = panelKey ? `#${pageKey}/${panelKey}` : `#${pageKey}`;
-  try { history.replaceState(null, '', hash); } catch(e) {}
+  try {
+    // 메인 페이지는 replace(히스토리 쌓지 않음), 나머지는 push(뒤로가기 가능)
+    if (pageKey === 'main') {
+      history.replaceState({page:pageKey, panel:panelKey||null}, '', hash);
+    } else {
+      history.pushState({page:pageKey, panel:panelKey||null}, '', hash);
+    }
+  } catch(e) {}
 }
 
 /* ════════ PANEL SWITCH ════════ */
@@ -1776,7 +1783,28 @@ function restoreFromHash() {
 // DOM 로드 완료 후 복원
 window.addEventListener('DOMContentLoaded', restoreFromHash);
 // 브라우저 뒤로가기/앞으로가기 지원
-window.addEventListener('popstate', restoreFromHash);
+window.addEventListener('popstate', (e) => {
+  if (e.state && e.state.page) {
+    // state에 저장된 페이지 정보로 이동
+    const { page, panel } = e.state;
+    // showPage 대신 직접 페이지 전환 (히스토리 새로 안 쌓음)
+    Object.values(PAGES).forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    });
+    const target = document.getElementById(PAGES[page]);
+    if (target) {
+      target.classList.remove('hidden');
+      target.classList.add('entering');
+      setTimeout(() => target.classList.remove('entering'), 450);
+    }
+    if (panel) switchPanel(page, panel);
+    window.scrollTo({ top: 0 });
+    closeMobile();
+  } else {
+    restoreFromHash();
+  }
+});
 
 
 
