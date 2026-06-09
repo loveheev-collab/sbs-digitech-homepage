@@ -820,13 +820,12 @@ async function syncFromFirestore() {
 
     // ── 활동소식 ──
     const newsSnap = await getDocs(query(collection(db,'news'), orderBy('createdAt','desc')));
-    if (!newsSnap.empty) {
+    const newsGrid = document.querySelector('.news-grid');
+    if (!newsSnap.empty && newsGrid) {
       const newsItems = newsSnap.docs.map(d => ({id:d.id,...d.data()}));
-      const newsGrid = document.querySelector('.news-grid');
       if (newsGrid) {
         const colors = ['nt-b','nt-o','nt-g'];
         // 전역 뉴스 캐시 저장
-        window._newsCache = newsItems;
         window._newsCache = newsItems;
         newsGrid.innerHTML = newsItems.map((n,i) => `
           <div class="news-card" onclick="openNewsDetail('${n.id||i}')" style="cursor:pointer;">
@@ -901,7 +900,7 @@ async function syncFromFirestore() {
 
 // DOM 로드 후 동기화
 window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(syncFromFirestore, 300);
+  setTimeout(syncFromFirestore, 100);
 });
 </script>
 
@@ -926,7 +925,7 @@ window.addEventListener('DOMContentLoaded', () => {
       <button onclick="showPage('about','org')">파트너십 소개</button>
       <a href="#curriculum" onclick="showPage('main')">교육과정</a>
       <a href="#roadmap" onclick="showPage('main')">로드맵</a>
-      <a href="#news" onclick="showPage('main')">활동소식</a>
+      <a href="#news" onclick="showPage('main');setTimeout(()=>{ document.getElementById('news').scrollIntoView({behavior:'smooth'}); },100);">활동소식</a>
       <button class="btn-career" onclick="showPage('career','overview')">💼 취업정보</button>
     </nav>
     <button class="hamburger" id="hamburger" onclick="toggleMobile()">
@@ -938,7 +937,7 @@ window.addEventListener('DOMContentLoaded', () => {
   <button onclick="closeMobile();showPage('about','org')">🏛️ 파트너십 소개</button>
   <a href="#curriculum" onclick="closeMobile();showPage('main')">📚 교육과정</a>
   <a href="#roadmap" onclick="closeMobile();showPage('main')">🗺️ 로드맵</a>
-  <a href="#news" onclick="closeMobile();showPage('main')">📰 활동소식</a>
+  <a href="#news" onclick="closeMobile();showPage('main');setTimeout(()=>{ document.getElementById('news').scrollIntoView({behavior:'smooth'}); },100);">📰 활동소식</a>
   <button class="m-career" onclick="closeMobile();showPage('career','overview')">💼 취업정보</button>
 </nav>
 
@@ -1078,7 +1077,7 @@ window.addEventListener('DOMContentLoaded', () => {
           <button onclick="showPage('about','org')">파트너십 소개</button>
           <a href="#curriculum" onclick="showPage('main')">교육과정</a>
           <a href="#roadmap" onclick="showPage('main')">로드맵</a>
-          <a href="#news" onclick="showPage('main')">활동소식</a>
+          <a href="#news" onclick="showPage('main');setTimeout(()=>{ document.getElementById('news').scrollIntoView({behavior:'smooth'}); },100);">활동소식</a>
           <button onclick="showPage('career','overview')">취업정보</button>
         </nav>
       </div>
@@ -1474,16 +1473,9 @@ function showPage(pageKey, panelKey) {
   // 패널 전환
   if (panelKey) switchPanel(pageKey, panelKey);
   closeMobile();
-  // URL 해시에 현재 페이지 저장 + 뒤로가기 지원
+  // URL 해시에 현재 페이지 저장 (새로고침 복원용)
   const hash = panelKey ? `#${pageKey}/${panelKey}` : `#${pageKey}`;
-  try {
-    // 메인 페이지는 replace(히스토리 쌓지 않음), 나머지는 push(뒤로가기 가능)
-    if (pageKey === 'main') {
-      history.replaceState({page:pageKey, panel:panelKey||null}, '', hash);
-    } else {
-      history.pushState({page:pageKey, panel:panelKey||null}, '', hash);
-    }
-  } catch(e) {}
+  try { history.replaceState(null, '', hash); } catch(e) {}
 }
 
 /* ════════ PANEL SWITCH ════════ */
@@ -1783,28 +1775,7 @@ function restoreFromHash() {
 // DOM 로드 완료 후 복원
 window.addEventListener('DOMContentLoaded', restoreFromHash);
 // 브라우저 뒤로가기/앞으로가기 지원
-window.addEventListener('popstate', (e) => {
-  if (e.state && e.state.page) {
-    // state에 저장된 페이지 정보로 이동
-    const { page, panel } = e.state;
-    // showPage 대신 직접 페이지 전환 (히스토리 새로 안 쌓음)
-    Object.values(PAGES).forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.add('hidden');
-    });
-    const target = document.getElementById(PAGES[page]);
-    if (target) {
-      target.classList.remove('hidden');
-      target.classList.add('entering');
-      setTimeout(() => target.classList.remove('entering'), 450);
-    }
-    if (panel) switchPanel(page, panel);
-    window.scrollTo({ top: 0 });
-    closeMobile();
-  } else {
-    restoreFromHash();
-  }
-});
+window.addEventListener('popstate', restoreFromHash);
 
 
 
